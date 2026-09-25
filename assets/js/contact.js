@@ -21,7 +21,7 @@ window.HUMMEL_CONTACT = {
      the same test. Publishing an address is the founder's call, so this stayed empty.
      set-contact.py requires --verified for exactly this reason: send one mail to the
      address from any external account, confirm no bounce, then set it. */
-  email: "",
+  email: "hello@hummelllc.com",
   scheduleUrl: ""    // e.g. "https://cal.com/brendan/30min" — 30-min intro call link
 };
 

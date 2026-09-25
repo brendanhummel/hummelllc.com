@@ -19,16 +19,22 @@ Build status: **complete and verified live on staging.** Two launch gates remain
 | Brand | P-A Slate & Sage locked palette; FINAL logo `HummelLLCLogo.png` wired into header, favicons, OG card (brief rev 4) |
 | Mobile/a11y | Single `<h1>` per page, skip links, contrast ≥ 4.5:1, `prefers-reduced-motion` respected, no horizontal overflow measured at 390/768/1440 |
 | Preflight gate | `python3 scripts/preflight.py --live <url> --dns` — run before launch; exits non-zero while a gate is open |
-| **Gate 1 — contact delivery** | **OPEN — the chosen address does not exist.** Founder chose `hello@hummelllc.com` (2026-09-25); a live delivery test bounced twice with a hard `550 5.1.1 User does not exist` from `mx.zoho.com`. Form is held in "pre-launch" mode on purpose — see §1. `brendan@hummelllc.com` **was** accepted with no bounce in the same test. |
-| **Gate 2 — analytics token** | **OPEN — waiting on the founder's snippet.** Founder confirmed Cloudflare Web Analytics and chose to send the JS snippet; nothing needed on the code side beyond pasting it. Site works without it, but launch traffic is unmeasurable. |
+| **Gate 1 — contact delivery** | **CLOSED 2026-09-25.** Founder created `hello@hummelllc.com` in Zoho and asked for a re-test; the re-test passed (two independent sends 17:08 EDT, no bounce after 9+ minutes — the *same* test had bounced in ~2 s twice at 16:38/16:42 while the mailbox was missing). `email: "hello@hummelllc.com"` is wired and live. See §1. |
+| **Gate 2 — analytics token** | **OPEN — waiting on the founder's snippet.** Founder confirmed Cloudflare Web Analytics; the card answer said "Send API token", which is the wrong value (an API token is an account credential and must not be shared). Only the *public* site token from the snippet is needed. Site works without it, but launch traffic is unmeasurable. |
 | Copyright line (`© 2026 Hummel LLC`) | **RESOLVED 2026-09-25 — founder chose KEEP**, as approved copy (trade-name usage; LLC not filed). Remains a preflight WARN so it re-surfaces at LLC formation. |
 | DNS cutover | Not started (correct — it is the launch step, days 26–30) |
 
 ---
 
-## 1. Gate 1 — contact delivery (blocks launch) — the chosen address BOUNCES
+## 1. Gate 1 — contact delivery — **CLOSED 2026-09-25**
 
-**Do not publish `hello@hummelllc.com`.** Founder selected it on 2026-09-25 and I wired it immediately, then tested real delivery before believing it. **Two independent sends bounced with a hard `550 5.1.1 User does not exist`** from `mx.zoho.com` (136.143.191.44, the server for `hummelllc.com`) at 16:38 and 16:42 EDT on 2026-09-25. Full diagnostic:
+**RESOLVED — the address is live and wired.** The founder created the `hello@hummelllc.com` mailbox in Zoho on 2026-09-25 and asked for a re-test. Re-test result: **two independent sends at 17:08 EDT (from the founder's Gmail and iCloud accounts via Mail.app) produced no bounce after 9+ minutes**, checked across every account's INBOX/Junk/Spam. The identical test had bounced twice in ~2 seconds earlier the same day while the mailbox was missing, so the address now accepts mail. Both test messages were confirmed in the accounts' Sent mailboxes and the outbox drained to 0.
+
+Wired live with `python3 scripts/set-contact.py --email hello@hummelllc.com --verified` — `email: "hello@hummelllc.com"` in `assets/js/contact.js`, deployed, and `preflight.py` now reports Gate 1 **ok** (the transport line reads `contact transport configured (mailto: hello@hummelllc.com)`).
+
+Residual check (owner: founder, ~1 minute, not a launch blocker): because the transport is a `mailto:`, the visitor's own mail client does the sending — so confirm one message actually *arrives* in the Zoho mailbox (write to `hello@` from any outside account and see it land). If mail to `hello@` ever starts bouncing again, do **not** leave it published: `python3 scripts/set-contact.py --clear` puts the form back in pre-launch mode in one command.
+
+**History — why the form was held in pre-launch mode.** Founder selected it on 2026-09-25 and I wired it immediately, then tested real delivery before believing it. **Two independent sends bounced with a hard `550 5.1.1 User does not exist`** from `mx.zoho.com` (136.143.191.44, the server for `hummelllc.com`) at 16:38 and 16:42 EDT on 2026-09-25. Full diagnostic:
 
 ```
 Final-Recipient: rfc822; hello@hummelllc.com
@@ -42,7 +48,7 @@ Same test, same minute: **`brendan@hummelllc.com` was accepted by Zoho with no b
 
 I reverted the change. The form is back in pre-launch mode because a `mailto:` to a dead address is worse than no transport at all: the visitor's mail app opens, the mail bounces to *them*, and the inquiry is lost silently while the page looks like it works. Publishing a contact address is a founder decision, so I did not swap in `brendan@` on my own.
 
-**Unblock — pick one, and it is one command (I run it, or the founder can):**
+**Unblock menu — kept for reference; option 1 is what happened:**
 
 1. **Create `hello@hummelllc.com` in Zoho Mail** (Zoho Mail admin → Users or Aliases for the `hummelllc.com` org; an alias on `brendan@` is fine). Then say so and I re-test within seconds — the bounce comes back in ~2 s, so this is a fast loop. Note: the domain's MX already point at Zoho, so if a mailbox is not appearing, check the mailbox is in the *same* Zoho org the domain is verified under. Wire it with `python3 scripts/set-contact.py --email hello@hummelllc.com --verified`.
 2. **Publish `brendan@hummelllc.com` instead** — already proven to accept mail. `python3 scripts/set-contact.py --email brendan@hummelllc.com --verified`. No copy change is needed any more: the visitor-facing text is derived from the configured `email`, so the address lives in exactly one place (2026-09-25 changed the form's pre-launch line from naming `hello@` to naming no address at all — flagged to Brand & Content as UI text, not approved copy).
@@ -60,9 +66,9 @@ window.HUMMEL_CONTACT = {
 };
 ```
 
-**Reproduce the check in 60 seconds:** send one email from any external account to the address, wait two minutes, and confirm `mailer-daemon` did not answer. Outbound SMTP is blocked from this machine (ports 25 and 587 both time out), which is why the test has to go through a real mail client.
+**Reproduce the check in 60 seconds:** send one email from any external account to the address, wait two minutes, and confirm `mailer-daemon` did not answer. Note on tooling (verified 2026-09-25): outbound port 25 from this machine times out, so an SMTP-level RCPT probe is not possible; port 587 connects but sending needs account credentials, which I do not hold and will not ask for. The test therefore runs through Mail.app's already-authenticated accounts (AppleScript), and bounces are read back from the accounts' INBOX/Junk/Spam.
 
-While this is open, visitors submitting the form are told delivery arrives with launch. That is honest, but it is not a launch state — **do not announce the site publicly until Gate 1 is set.**
+The form is no longer in pre-launch mode — it opens a pre-filled mail app addressed to `hello@hummelllc.com`. What that changes for launch: the site **can now take an inquiry**, so Gate 1 no longer blocks announcement. Announcing is still gated on the roadmap (Gate 2 snippet + the DNS cutover, days 26–30) and on the founder's call.
 
 ---
 
@@ -129,7 +135,7 @@ Owner: founder (GoDaddy access — I have no registrar credentials and will not 
 1. **Scheduling link** — `scheduleUrl` empty, so "Schedule a 30-minute intro call" scrolls to the form instead of booking. Give me a calendar URL (e.g. Cal.com / Google Appointment) and it is a one-line change. Owner: founder.
 2. **Footer `© 2026 Hummel LLC`** — **RESOLVED 2026-09-25: founder reviewed and chose KEEP.** It is verbatim approved copy (`site-copy` §3.7), trade-name usage is allowed, and the LLC is not filed. I do not invent or rewrite legal text, so it ships as approved. The preflight WARN was kept deliberately (re-worded to record the decision) so the line re-surfaces when the LLC is actually formed — at that point the notice becomes accurate and the WARN can be retired.
 3. **Hosting account is GoDaddy, launch host is GitHub Pages** — the GoDaddy hosting plan sits unused (brief rev 4 §7 says hosting account = GoDaddy; the founder separately locked GitHub Pages in the stack decision). I recommend staying on Pages: free, repo-backed, no build step, and the current staging URL simply becomes production. Moving to GoDaddy hosting would mean a rebuild/redeploy path with no launch benefit. Flagging for visibility — Chief of staff's call if the founder wants the paid plan used.
-4. **`hello@hummelllc.com` does not exist** — ~~unverifiable from this machine~~ **now tested and it FAILS**: hard `550 5.1.1 User does not exist` from `mx.zoho.com`, twice. See §1. Outbound SMTP is blocked from this machine (ports 25/587 time out), so the test ran through a real mail client instead. `brendan@hummelllc.com` was accepted with no bounce in the same run.
+4. **`hello@hummelllc.com`** — **RESOLVED 2026-09-25:** it bounced twice in ~2 s (`550 5.1.1` from `mx.zoho.com`) at 16:38/16:42 EDT, the founder then created the mailbox, and a re-test at 17:08 EDT (two independent external senders) produced no bounce after 9+ minutes. `email: "hello@hummelllc.com"` is wired and live. See §1.
 
 ---
 
