@@ -9,16 +9,18 @@
    Flip these in ONE place before launch. See README "Contact & scheduling".
    ========================================================================== */
 window.HUMMEL_CONTACT = {
+  /* Set all three with `python3 scripts/set-contact.py` (--endpoint / --email --verified
+     / --schedule), not by hand — it validates and re-runs the launch gate. --show prints
+     the current config. */
   endpoint: "",      // e.g. "https://formspree.io/f/abcdwxyz" — form provider URL
-  /* email: founder chose hello@hummelllc.com (2026-09-25), but it does NOT exist:
-     live delivery test from this machine bounced twice with "550 5.1.1 User does not
-     exist" from mx.zoho.com — the server for hummelllc.com (verified 2026-09-25
-     16:38 and 16:42 EDT). Do NOT set this until a mailbox actually accepts mail:
-     a mailto to a dead address silently loses every inquiry and looks like it works.
-     As of the same test, brendan@hummelllc.com WAS accepted by Zoho with no bounce —
-     pending founder confirmation of which address the site should publish, plus a
-     copy change from Brand & Content (site-copy §3.6 names hello@ in the fallback text).
-     Re-run: send one mail to the address from any external account and confirm no bounce. */
+  /* email: the address the form opens in the visitor's mail app. Do NOT set it until that
+     mailbox actually accepts mail: a mailto to a dead address silently loses every inquiry
+     while the page looks like it works. That is how hello@hummelllc.com failed on
+     2026-09-25 — two live sends bounced with "550 5.1.1 User does not exist" from
+     mx.zoho.com (16:38 and 16:42 EDT); brendan@hummelllc.com was accepted, no bounce, in
+     the same test. Publishing an address is the founder's call, so this stayed empty.
+     set-contact.py requires --verified for exactly this reason: send one mail to the
+     address from any external account, confirm no bounce, then set it. */
   email: "",
   scheduleUrl: ""    // e.g. "https://cal.com/brendan/30min" — 30-min intro call link
 };
