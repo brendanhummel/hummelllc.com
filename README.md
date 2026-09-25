@@ -54,7 +54,7 @@ All wiring is one config object at the top of `assets/js/contact.js` (`window.HU
 - `email`: set to `hello@hummelllc.com` **only once a mailbox/MX is confirmed live** — then the form opens a mailto instead. Until either is set, submitting shows a friendly pre-launch note (no dead inbox, no broken mailto).
 - `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form. Note: README's earlier note said Zoho MX (mx1–3.zoho.com) resolves for the domain — whether a Zoho mailbox exists is unconfirmed (brief §7). Verify before setting `email`.
 
-Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 — free, cookie-free, no banner needed). Each page head has an `ANALYTICS SLOT` comment; to go live: create a free Cloudflare account, add the site, and paste the beacon snippet (with token) into the slot on all 6 pages. Nothing ships without the token. Site works fully without it.
+Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 — free, cookie-free, no banner needed). Each page head has an `ANALYTICS SLOT` comment; to go live: create a free Cloudflare account, **Analytics & Logs → Web Analytics → Add a site** → hostname `hummelllc.com`, then copy the JS snippet from **Manage site** and paste it into the slot on all 6 pages. **No Cloudflare API token is required** — the `token` in the snippet is a public site token (it is visible in page source on every site using CWA) and grants no account permissions. No nameserver change, no Cloudflare zone, DNS stays at GoDaddy. Nothing ships without the snippet. Site works fully without it. Full detail: `LAUNCH-RUNBOOK.md` §2.
 
 ## SEO & assets
 

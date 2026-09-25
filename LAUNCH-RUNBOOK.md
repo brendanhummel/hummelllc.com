@@ -59,11 +59,24 @@ While this is open, visitors submitting the form are told delivery arrives with 
 
 Locked provider (founder, 2026-09-25): Cloudflare Web Analytics — free, cookie-free, so no consent banner.
 
-1. Create/sign in at https://dash.cloudflare.com → **Analytics & Logs → Web Analytics → Add a site** → `hummelllc.com`.
-2. Copy the JS snippet it shows (it contains a `token`).
-3. **Either** paste it into the `ANALYTICS SLOT` comment at the top of each page's `<head>` (search for `ANALYTICS SLOT` — all 6 pages have one, with the exact snippet pre-written and only the token missing), **or** send me the token and I will wire it in one pass and redeploy.
+> **No API token is needed. Not a read token, not a write token, none.**
+> Web Analytics is set up with a **site token** that ships inside the public JS
+> snippet — it is visible in the page source of every site that uses it, so it
+> grants no account permissions and cannot read or change anything. Do not
+> create an API token, do not paste an API key anywhere, and do not send a
+> Cloudflare password. `hummelllc.com` does **not** need to be added as a
+> Cloudflare zone and its DNS stays at GoDaddy — the snippet is the manual
+> installation path for a site Cloudflare does not host.
+> (An API token would only be relevant if we ever moved *deployments* onto
+> Cloudflare Pages — we did not; launch host is GitHub Pages, §3. If that ever
+> changes, the ask would be a scoped `Cloudflare Pages: Edit` token, never a
+> global key.)
 
-Verification after wiring: `python3 scripts/preflight.py --live <url>` flips Gate 2 from FAIL to ok.
+1. Create/sign in at https://dash.cloudflare.com → **Analytics & Logs → Web Analytics → Add a site** → hostname `hummelllc.com` → **Done** (skip any offer to change nameservers).
+2. Open **Manage site** and copy the JS snippet it shows (it contains `"token": "…"`). If prompted, choose **Enable with JS Snippet installation** — not the automatic option, which only works for zones proxied through Cloudflare.
+3. **Either** paste it into the `ANALYTICS SLOT` comment at the top of each page's `<head>` (search for `ANALYTICS SLOT` — all 6 pages have one, with the exact snippet pre-written and only the token missing), **or** send me just the snippet/token and I will wire it in one pass and redeploy. The token is public data, so sharing it is harmless either way.
+
+Verification after wiring: `python3 scripts/preflight.py --live <url>` flips Gate 2 from FAIL to ok. Data can lag the first pageview by ~10 minutes; a beacon POST returning `204` means it is working.
 
 ---
 
