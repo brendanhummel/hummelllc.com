@@ -2,7 +2,7 @@
 
 Static, no-build website for Hummel LLC. Plain HTML + one stylesheet + one small JS file — nothing to install, nothing to compile, deploys to any static host as-is.
 
-Copy source of truth: document `brief` (HUM-2, rev 2, APPROVED 2026-09-25). Page copy: document `site-copy` (HUM-6, rev 2 — FINAL, style locked by founder 2026-09-25: tagline A1, voice V1 steady senior advisor, accent P-A slate & sage). All pages built against `site-copy` §3 verbatim (A1 hero). Nothing here invents claims — see Content rules below.
+Copy source of truth: document `brief` (HUM-2, rev 4, APPROVED — intake COMPLETE 2026-09-25: hosting = GoDaddy, logo FINAL = HummelLLCLogo.png, LLC NOT YET FILED → legal-name guardrail below). Page copy: document `site-copy` (HUM-6, rev 2 — FINAL, style locked by founder 2026-09-25: tagline A1, voice V1 steady senior advisor, accent P-A slate & sage). All pages built against `site-copy` §3 verbatim (A1 hero). Nothing here invents claims — see Content rules below.
 
 - Staging (GitHub Pages): `https://brendanhummel.github.io/hummelllc.com/`
 - Production domain: `https://hummelllc.com/` (DNS cutover at launch, roadmap days 26–30)
@@ -42,6 +42,7 @@ Design tokens (colors, radius, type) live in `assets/css/site.css` under `:root`
 - **No 24/7 / always-on implication:** the only occurrences are explicit negations in approved copy ("not 24/7 support"; "not an always-on, ticket-driven MSP"). Do not add more.
 - **Banned words** (both approved voices): 24/7 (except negations above), always-on (except the non-MSP block), best-in-class, enterprise-grade, seamless, robust, trusted by N clients, guaranteed, affordable plans starting at.
 - No certs, client counts, headcounts, or revenue on any page.
+- **LLC legal-name guardrail (brief rev 4):** "Hummel LLC" is brand/trade-name only — the LLC is NOT yet filed. No legal-entity claim in fine print, contracts, or invoices (e.g. do not write "Hummel LLC, a limited liability company"). Footer/title usage as a trade name is fine.
 
 ## Contact & scheduling (engage)
 
@@ -57,11 +58,12 @@ Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 �
 
 - Titles/descriptions/canonical/OG per page (site-copy §3.7); canonical URLs point at the production domain with clean slugs.
 - `sitemap.xml` + `robots.txt` at root.
-- `assets/og-image.png` — interim wordmark-on-slate social card (1200×630), generated from the P-A palette. Regenerate or replace when the logo lands; `og:image` is referenced from every page head.
+- `assets/og-image.png` — social card (1200×630) generated from the FINAL logo (`HummelLLCLogo.png`, brief rev 4) on white with the trimmed logomark. `og:image` referenced from every page head.
+- Header brand = `assets/logo.png` (trimmed full logo, mark + wordmark). Favicons: `assets/favicon-32.png`, `assets/favicon-180.png` (apple-touch-icon), `favicon.ico` (16/32/48) — all H-monogram crops of the final logo, generated from the same source file. **Regenerate any of them with `python3 scripts/make-logo-assets.py`** — the script reads the source logo from iCloud (`~/Library/Mobile Documents/com~apple~CloudDocs/Hummelllc/HummelLLCLogo.png`, 1144×1104 RGBA). Only that file is the logo source; no derivatives without founder OK.
 
 ## DNS / launch facts
 
-- Registrar: GoDaddy (nameservers ns23/ns24.domaincontrol.com — parked as of 2026-09-25).
+- Registrar + hosting account: GoDaddy (brief rev 4 — both confirmed; nameservers ns23/ns24.domaincontrol.com, parked as of 2026-09-25).
 - Email MX today: Zoho (mx1–3.zoho.com) — mailbox existence unconfirmed.
 - **Launch host: GitHub Pages (LOCKED by founder — stack interaction 2026-09-25).** Staging URL becomes the production host; DNS cutover = add a `CNAME` from `www` to `brendanhummel.github.io` at GoDaddy (or use GoDaddy's web-forwarding to `www`), plus enable the custom domain in the Pages settings (Settings → Pages → Custom domain). Preserve existing MX/TXT records when editing DNS (brief §7).
 - Full runbook lives in HUM-5 issue comments.

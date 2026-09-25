@@ -97,19 +97,16 @@ img { max-width: 100%; height: auto; }
 }
 
 .brand {
-  font-size: 1.2rem;
-  font-weight: 600;               /* brand: 600, sentence case, no icon */
-  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   color: var(--color-ink);
-  white-space: nowrap;
 }
-.brand-sub {
-  font-weight: 600;
-  font-variant-caps: small-caps;  /* "LLC" understated, per brand direction */
-  letter-spacing: 0.14em;
-  font-size: 0.82em;
-  margin-inline-start: 0.15em;
+.brand img {
+  display: block;
+  height: 2.9rem;         /* final logo (brief rev 4): stacked mark + wordmark */
+  width: auto;
+  max-width: 220px;
 }
 
 .header-row {
