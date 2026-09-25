@@ -67,7 +67,7 @@ python3 scripts/set-contact.py --schedule https://cal.com/brendan/30min
 
 The visitor-facing text is derived from `email`, so the address is configured in exactly one place and cannot drift. Behaviour of all three transports is covered by `node scripts/test-contact-modes.js`.
 
-Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 — free, cookie-free, no banner needed). Each page head has an `ANALYTICS SLOT` comment holding the exact snippet with only the token missing. To go live: create a free Cloudflare account, **Analytics & Logs → Web Analytics → Add a site** → hostname `hummelllc.com` (decline any offer to change nameservers), then copy the JS snippet from **Manage site** and install it on all 6 pages with one command:
+Analytics: **INSTALLED 2026-09-25 — Cloudflare Web Analytics beacon live on all 6 pages** (founder decision 2026-09-25 — free, cookie-free, no banner needed). The founder supplied the dashboard snippet; it was installed in one pass with `python3 scripts/set-analytics.py --snippet '<the snippet>'`, which wrote the beacon (public site token `382b5c…288d`) into every page head. `preflight.py` reports `ok analytics beacon live on all pages`. To change it (new token/site), re-run:
 
 ```bash
 python3 scripts/set-analytics.py --snippet-file snippet.txt   # or --token <32-hex value>

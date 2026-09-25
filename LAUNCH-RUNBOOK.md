@@ -1,7 +1,7 @@
 # Launch runbook — hummelllc.com
 
 Key: `launch-runbook` · Owner: Website Engineer (HUM-5) · Written 2026-09-25
-Build status: **complete and verified live on staging.** Two launch gates remain open, both needing a founder input (not engineering work). Everything else is copy-paste.
+Build status: **complete and verified live on staging.** Both founder-input gates are now **CLOSED** (Gate 1 contact delivery 2026-09-25; Gate 2 analytics 2026-09-25). What remains is the DNS cutover, which is a scheduled launch step (days 26–30), not an engineering gap.
 
 - Staging (verified today, commit `113d3c0`): https://brendanhummel.github.io/hummelllc.com/
 - Repo: `brendanhummel/hummelllc.com` (public, branch-deploy from `main` — push = publish)
@@ -20,7 +20,7 @@ Build status: **complete and verified live on staging.** Two launch gates remain
 | Mobile/a11y | Single `<h1>` per page, skip links, contrast ≥ 4.5:1, `prefers-reduced-motion` respected, no horizontal overflow measured at 390/768/1440 |
 | Preflight gate | `python3 scripts/preflight.py --live <url> --dns` — run before launch; exits non-zero while a gate is open |
 | **Gate 1 — contact delivery** | **CLOSED 2026-09-25.** Founder created `hello@hummelllc.com` in Zoho and asked for a re-test; the re-test passed (two independent sends 17:08 EDT, no bounce after 9+ minutes — the *same* test had bounced in ~2 s twice at 16:38/16:42 while the mailbox was missing). `email: "hello@hummelllc.com"` is wired and live. See §1. |
-| **Gate 2 — analytics token** | **OPEN — waiting on the founder's snippet.** Founder confirmed Cloudflare Web Analytics; the card answer said "Send API token", which is the wrong value (an API token is an account credential and must not be shared). Only the *public* site token from the snippet is needed. Site works without it, but launch traffic is unmeasurable. |
+| **Gate 2 — analytics token** | **CLOSED 2026-09-25.** Founder supplied the Cloudflare Web Analytics JS snippet containing the **public site token** (`382b5c…288d`). Wired into all 6 pages with `python3 scripts/set-analytics.py --snippet '…'`; `preflight.py` now reports "analytics beacon live on all pages". No API token was ever needed. See §2. |
 | Copyright line (`© 2026 Hummel LLC`) | **RESOLVED 2026-09-25 — founder chose KEEP**, as approved copy (trade-name usage; LLC not filed). Remains a preflight WARN so it re-surfaces at LLC formation. |
 | DNS cutover | Not started (correct — it is the launch step, days 26–30) |
 
@@ -72,7 +72,19 @@ The form is no longer in pre-launch mode — it opens a pre-filled mail app addr
 
 ---
 
-## 2. Gate 2 — Cloudflare Web Analytics token (2 minutes, founder)
+## 2. Gate 2 — Cloudflare Web Analytics token — **CLOSED 2026-09-25**
+
+**RESOLVED.** The founder posted the Cloudflare Web Analytics JS snippet; it carried the public site token, which is all this needed. Installed on all six pages in one pass:
+
+```bash
+python3 scripts/set-analytics.py --snippet '<script … data-cf-beacon='"'"'{"token": "382b5ca9…"}'"'"'></script>'
+```
+
+`preflight.py` now reports `ok analytics beacon live on all pages`. Committed and pushed; GitHub Pages redeploys on push, so the beacon is live on staging as soon as the build finishes (~1 minute). Data lags the first pageview by ~10 minutes; a beacon POST returning `204` means it is working.
+
+**One cleanup item for the founder (not a launch blocker).** The same note said the API information was saved as `CloudFlareAPI.txt` in the iCloud folder `Hummelllc`. That file was **not found on this machine** (`~/Library/Mobile Documents/com~apple~CloudDocs/Hummelllc/` holds only `HummelLLCLogo.png`), so nothing was read from it and nothing from it was used. Nothing in this build needs a Cloudflare API token or API key — Web Analytics is installed by the public snippet alone, DNS stays at GoDaddy, and the host is GitHub Pages. **If a Cloudflare API token was created for this work, revoke it** (dash.cloudflare.com → My Profile → API Tokens) and delete the note. If the file does appear in iCloud later, treat it as an account credential: do not paste it into an issue comment, chat, or this repo — `scripts/set-analytics.py` and `scripts/preflight.py` both refuse credential-shaped input, and preflight fails the build if a page ever carries one.
+
+Original instructions (kept for reference):
 
 Locked provider (founder, 2026-09-25): Cloudflare Web Analytics — free, cookie-free, so no consent banner.
 
