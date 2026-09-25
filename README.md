@@ -30,6 +30,8 @@ Everything is plain HTML. No build step, nothing to install.
    ```
 3. Verify at the staging URL; production follows at DNS cutover.
 
+> **Internal links are RELATIVE on purpose.** GitHub Pages serves this repo under `/hummelllc.com/`, so absolute paths (`/assets/...`, `/what-we-do/`) 404 against the origin root. Root pages use `assets/...`/`what-we-do/...` (no leading slash); subfolder pages use `../assets/...`. These resolve at both the subpath staging URL and the apex production domain. `404.html` is the exception — root-absolute (it's served at arbitrary paths). Canonical/OG/sitemap URLs stay absolute (production domain). Don't "clean up" the relative refs.
+
 Shared page furniture (header/nav/footer) is duplicated per page intentionally — seven small files, trivial to edit. If pages grow past ~10, migrate to a tiny template step (e.g. Eleventy) — revisit then, not now.
 
 Design tokens (colors, radius, type) live in `assets/css/site.css` under `:root`. Brand treatment applied: **P-A Slate & Sage (LOCKED)** — ink `#232B36`, paper `#FAF8F4`, accent `#3E6B4F` (CTAs/links only), mono eyebrows (site-copy §4). Type: Inter 400/600 + IBM Plex Mono eyebrows, body 17px / line-height 1.6. No display font, no stock imagery.
