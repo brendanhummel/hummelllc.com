@@ -22,7 +22,7 @@ Build status: **complete and verified live on staging.** Both founder-input gate
 | **Gate 1 — contact delivery** | **CLOSED 2026-09-25.** Founder created `hello@hummelllc.com` in Zoho and asked for a re-test; the re-test passed (two independent sends 17:08 EDT, no bounce after 9+ minutes — the *same* test had bounced in ~2 s twice at 16:38/16:42 while the mailbox was missing). `email: "hello@hummelllc.com"` is wired and live. See §1. |
 | **Gate 2 — analytics token** | **CLOSED 2026-09-25.** Founder supplied the Cloudflare Web Analytics JS snippet containing the **public site token** (`382b5c…288d`). Wired into all 6 pages with `python3 scripts/set-analytics.py --snippet '…'`; `preflight.py` now reports "analytics beacon live on all pages". No API token was ever needed. See §2. |
 | Copyright line (`© 2026 Hummel LLC`) | **RESOLVED 2026-09-25 — founder chose KEEP**, as approved copy (trade-name usage; LLC not filed). Remains a preflight WARN so it re-surfaces at LLC formation. |
-| DNS cutover | Not started (correct — it is the launch step, days 26–30) |
+| DNS cutover | **Not started — waiting on founder GoDaddy access (the only blocker).** Prepared 2026-09-25: exact record change and rollback in §3, plus a one-command production verifier `python3 scripts/postcutover.py` (proven to fail correctly pre-cutover: 12 fail, catches the parking page). |
 
 ---
 
@@ -133,8 +133,19 @@ Verified DNS state today (2026-09-25):
 
 1. GoDaddy → **My Products → hummelllc.com → DNS** → edit the `@` A records to the four GitHub IPs; add/replace a `www` **CNAME** → `brendanhummel.github.io`. Delete only the parking A records. Leave every MX/TXT record exactly as it is.
 2. GitHub → repo `hummelllc.com` → **Settings → Pages → Custom domain** → enter `hummelllc.com` → Save. (Ticking **Enforce HTTPS** is safe once the certificate shows as issued; it can take up to ~24h, usually minutes.)
-3. Verify: `https://hummelllc.com/` and `https://www.hummelllc.com/` both load with a valid certificate; the old staging URL redirects to the domain; then run `python3 scripts/preflight.py --live https://hummelllc.com/ --dns` — expect **no FAIL**.
-4. Post-cutover smoke test: all 6 pages, the form submit, one email to `hello@`, and `curl -I https://hummelllc.com/what-we-do/` for a 200.
+3. Verify: `https://hummelllc.com/` and `https://www.hummelllc.com/` both load with a valid certificate; the old staging URL redirects to the domain; then run the one-command production check:
+
+   ```
+   python3 scripts/postcutover.py
+   ```
+
+   It gates DNS (all four apex A records + `www` CNAME + MX/SPF survived), the live TLS certificate on both hostnames, all 6 routes, the canonical tags, the analytics beacon, the `curl -I` HEAD check, and the engage form — then hands off to `preflight.py --live https://hummelllc.com/ --dns`. Expect `PRODUCTION VERIFIED … 0 fail`. **Run it before the cutover and it fails on purpose** — that is how the gate proves it can see the difference (verified 2026-09-25 pre-cutover: 12 fail, and it correctly caught the parking page).
+
+   > **A green padlock is not proof of launch.** GoDaddy's parking page already serves a *valid* `hummelllc.com` certificate (issuer: GoDaddy.com), so `https://hummelllc.com/` looks healthy today and returns HTTP 200 — it is just someone else's page. Only the DNS + route checks below distinguish the two; the cutover cert must be issued by GitHub Pages' issuer and the four A records must match exactly.
+
+4. Post-cutover smoke test: all 6 pages, the form submit, one email to `hello@`, and `curl -I https://hummelllc.com/what-we-do/` for a 200 — this last one is automated in `scripts/postcutover.py`.
+
+**Contingency — GitHub domain verification.** If GitHub shows the custom domain as *unverified* (Settings → Pages, or a banner), it will hand you a `_github-pages-challenge-brendanhummel` **TXT** record to add at GoDaddy. Add it alongside the existing TXT records; do not replace them. It does not affect mail. This is the only DNS addition beyond the table above.
 
 **Rollback:** revert step 1 (restore the two GoDaddy parking A records, drop the `www` CNAME). Email is untouched throughout, so rollback cannot break mail. The staging URL keeps serving either way.
 

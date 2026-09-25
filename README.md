@@ -82,6 +82,7 @@ The script is idempotent (re-running reports "already current"), replaces the pl
 | Script | What it does |
 |---|---|
 | `scripts/preflight.py` | The launch gate — copy guardrails, structure, credential scan, the three launch gates, `--live` route fetches, `--dns` cutover check. Run it before launch and after any change. |
+| `scripts/postcutover.py` | **Post-cutover production verification (runbook §3).** One command: DNS gate (four apex A + `www` CNAME + MX/SPF survived), live TLS cert on both hostnames, all 6 routes, canonical tags, analytics beacon, the `curl -I` HEAD check, engage form, then hands off to `preflight.py`. Exits non-zero until production is genuinely serving. |
 | `scripts/set-analytics.py` | Installs the Cloudflare Web Analytics beacon on all 6 pages from a token or snippet. Idempotent; refuses account-credential-shaped input. |
 | `scripts/set-contact.py` | Sets the Engage form's `endpoint` / `email` / `scheduleUrl` (Gate 1). `--email` requires `--verified`. `--show` prints the current config. |
 | `scripts/test-contact-modes.js` | `node scripts/test-contact-modes.js` — runs the real `contact.js` in a small DOM shim and asserts what a visitor sees in each of the three transports. |
