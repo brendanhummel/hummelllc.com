@@ -2,7 +2,7 @@
 
 Static, no-build website for Hummel LLC. Plain HTML + one stylesheet + one small JS file — nothing to install, nothing to compile, deploys to any static host as-is.
 
-Copy source of truth: document `brief` (HUM-2, rev 2, APPROVED 2026-09-25). Page copy: document `site-copy` (HUM-6, rev 1). All pages rebuilt against `site-copy` §3 verbatim (A1 hero). Nothing here invents claims — see Content rules below.
+Copy source of truth: document `brief` (HUM-2, rev 2, APPROVED 2026-09-25). Page copy: document `site-copy` (HUM-6, rev 2 — FINAL, style locked by founder 2026-09-25: tagline A1, voice V1 steady senior advisor, accent P-A slate & sage). All pages built against `site-copy` §3 verbatim (A1 hero). Nothing here invents claims — see Content rules below.
 
 - Staging (GitHub Pages): `https://brendanhummel.github.io/hummelllc.com/`
 - Production domain: `https://hummelllc.com/` (DNS cutover at launch, roadmap days 26–30)
@@ -32,7 +32,7 @@ Everything is plain HTML. No build step, nothing to install.
 
 Shared page furniture (header/nav/footer) is duplicated per page intentionally — seven small files, trivial to edit. If pages grow past ~10, migrate to a tiny template step (e.g. Eleventy) — revisit then, not now.
 
-Design tokens (colors, radius, type) live in `assets/css/site.css` under `:root`. Brand treatment applied: **P-A Slate & Sage** — ink `#232B36`, paper `#FAF8F4`, accent `#3E6B4F` (CTAs/links only), mono eyebrows (site-copy §4). If the style lock lands on P-B (ember), swap the three color tokens — nothing else changes.
+Design tokens (colors, radius, type) live in `assets/css/site.css` under `:root`. Brand treatment applied: **P-A Slate & Sage (LOCKED)** — ink `#232B36`, paper `#FAF8F4`, accent `#3E6B4F` (CTAs/links only), mono eyebrows (site-copy §4). Type: Inter 400/600 + IBM Plex Mono eyebrows, body 17px / line-height 1.6. No display font, no stock imagery.
 
 ## Content rules (MANDATORY — brief §6 / site-copy §6)
 
