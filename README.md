@@ -51,7 +51,7 @@ All wiring is one config object at the top of `assets/js/contact.js` (`window.HU
 - `email`: set to `hello@hummelllc.com` **only once a mailbox/MX is confirmed live** — then the form opens a mailto instead. Until either is set, submitting shows a friendly pre-launch note (no dead inbox, no broken mailto).
 - `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form. Note: README's earlier note said Zoho MX (mx1–3.zoho.com) resolves for the domain — whether a Zoho mailbox exists is unconfirmed (brief §7). Verify before setting `email`.
 
-Analytics: provider TBD (Plausible / Cloudflare Web Analytics). Each page head has an `ANALYTICS SLOT` comment — drop the approved snippet there once decided; nothing ships without a decision.
+Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 — free, cookie-free, no banner needed). Each page head has an `ANALYTICS SLOT` comment; to go live: create a free Cloudflare account, add the site, and paste the beacon snippet (with token) into the slot on all 6 pages. Nothing ships without the token. Site works fully without it.
 
 ## SEO & assets
 
@@ -63,4 +63,5 @@ Analytics: provider TBD (Plausible / Cloudflare Web Analytics). Each page head h
 
 - Registrar: GoDaddy (nameservers ns23/ns24.domaincontrol.com — parked as of 2026-09-25).
 - Email MX today: Zoho (mx1–3.zoho.com) — mailbox existence unconfirmed.
-- Cutover (launch): add custom domain in host settings + point DNS at the host. Full runbook lives in HUM-5 issue comments.
+- **Launch host: GitHub Pages (LOCKED by founder — stack interaction 2026-09-25).** Staging URL becomes the production host; DNS cutover = add a `CNAME` from `www` to `brendanhummel.github.io` at GoDaddy (or use GoDaddy's web-forwarding to `www`), plus enable the custom domain in the Pages settings (Settings → Pages → Custom domain). Preserve existing MX/TXT records when editing DNS (brief §7).
+- Full runbook lives in HUM-5 issue comments.
