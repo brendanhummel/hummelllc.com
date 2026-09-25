@@ -52,7 +52,7 @@ All wiring is one config object at the top of `assets/js/contact.js` (`window.HU
 
 - `endpoint`: form provider URL (Formspree / Netlify Forms / Cloudflare Pages function). While empty, the form falls back to…
 - `email`: the address the form opens in the visitor's mail app — set it **only once that mailbox is confirmed to accept mail** (send one test, confirm no bounce). Until `endpoint` or `email` is set, submitting shows a short pre-launch note (no dead inbox, no broken mailto).
-- `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form.
+- `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form and the "A calendar link lands here before launch" note stays. Once set, the button goes straight to the calendar and that note is hidden automatically — left visible it would contradict the working link sitting right under it.
 
 **Set these with the helper, not by hand:**
 

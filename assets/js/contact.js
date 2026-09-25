@@ -36,7 +36,17 @@ window.HUMMEL_CONTACT = {
   var sched = document.getElementById("schedule-cta");
   if (sched) {
     sched.href = cfg.scheduleUrl || "#contact-form";
-    if (!cfg.scheduleUrl) sched.setAttribute("aria-describedby", "schedule-note");
+    var note = document.getElementById("schedule-note");
+    if (cfg.scheduleUrl) {
+      /* The note exists only to explain why this button is not a calendar link yet
+         ("until then the button takes you to the form below"). Once scheduleUrl is set
+         that sentence is false, so hide it — otherwise the page contradicts itself
+         directly above a working booking link. This is UI state, not new copy: Brand &
+         Content can supply replacement text for the slot if they want something here. */
+      if (note) note.hidden = true;
+    } else {
+      sched.setAttribute("aria-describedby", "schedule-note");
+    }
   }
 
   if (!form || !status) return;

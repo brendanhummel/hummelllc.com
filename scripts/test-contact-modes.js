@@ -39,6 +39,7 @@ function run(contactConfig, submitFields) {
     },
     "form-status": status,
     "schedule-cta": { href: "", setAttribute: () => {} },
+    "schedule-note": { hidden: false },
     "cf-name": { value: submitFields.name },
     "cf-email": { value: submitFields.email },
     "cf-company": { value: submitFields.company || "" },
@@ -58,11 +59,12 @@ function run(contactConfig, submitFields) {
   fn(sandbox.window, sandbox.document, encodeURIComponent, sandbox.fetch);
 
   const schedule = nodes["schedule-cta"].href;
+  const noteHidden = nodes["schedule-note"].hidden;
   let submitted = false;
   if (nodes.handler) {
     nodes.handler({ preventDefault: () => { submitted = true; } });
   }
-  return { status: status.textContent, schedule, submitted, mailto: sandbox.window.location.href };
+  return { status: status.textContent, schedule, noteHidden, submitted, mailto: sandbox.window.location.href };
 }
 
 let failures = 0;
@@ -79,6 +81,7 @@ check("mode 3 submits without navigating away", r.submitted && r.mailto === "", 
 check("mode 3 message does not promise a live address", !/@hummelllc\.com/.test(r.status), r.status);
 check("mode 3 message is honest that nothing was sent", /can.t be sent yet/.test(r.status), r.status);
 check("mode 3 points the schedule button at the form", r.schedule === "#contact-form", r.schedule);
+check("mode 3 keeps the explanatory schedule note", r.noteHidden === false, "note was hidden with no booking link");
 
 // Mode 2 — a verified mailbox is published.
 r = run({ endpoint: "", email: "brendan@hummelllc.com", scheduleUrl: "" }, fields);
@@ -93,6 +96,8 @@ r = run({ endpoint: "https://formspree.io/f/abcdwxyz", email: "brendan@hummelllc
 check("mode 1 does not open a mail client", r.mailto === "", r.mailto);
 check("mode 1 wiring is recognised", r.submitted, "handler missing");
 check("schedule URL is applied when configured", r.schedule === "https://cal.com/brendan/30min", r.schedule);
+check("the 'no calendar link yet' note is hidden once a link is set", r.noteHidden === true,
+  "the page would still claim no booking link exists, right above a working one");
 
 // Validation path is unchanged: empty required fields must not submit.
 r = run({ endpoint: "https://formspree.io/f/abcdwxyz", email: "", scheduleUrl: "" },
