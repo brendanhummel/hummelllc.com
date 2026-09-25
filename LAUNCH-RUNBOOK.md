@@ -42,13 +42,15 @@ Same test, same minute: **`brendan@hummelllc.com` was accepted by Zoho with no b
 
 I reverted the change. The form is back in pre-launch mode because a `mailto:` to a dead address is worse than no transport at all: the visitor's mail app opens, the mail bounces to *them*, and the inquiry is lost silently while the page looks like it works. Publishing a contact address is a founder decision, so I did not swap in `brendan@` on my own.
 
-**Unblock — pick one, and I wire it in one line:**
+**Unblock — pick one, and it is one command (I run it, or the founder can):**
 
-1. **Create `hello@hummelllc.com` in Zoho Mail** (Zoho Mail admin → Users or Aliases for the `hummelllc.com` org; an alias on `brendan@` is fine). Then say so and I re-test within seconds — the bounce comes back in ~2 s, so this is a fast loop. Note: the domain's MX already point at Zoho, so if a mailbox is not appearing, check the mailbox is in the *same* Zoho org the domain is verified under.
-2. **Publish `brendan@hummelllc.com` instead** — already proven to accept mail. One-line change here, **plus** a copy change from Brand & Content: `site-copy` §3.6 names `hello@` in the fallback text, and `contact.js` mode-1 error text mentions it too.
-3. **Use a form provider** (`endpoint`) — Formspree / Netlify Forms / a Cloudflare Pages function. Then no mailbox is on the critical path at all, and the in-page experience is better than a mailto.
+1. **Create `hello@hummelllc.com` in Zoho Mail** (Zoho Mail admin → Users or Aliases for the `hummelllc.com` org; an alias on `brendan@` is fine). Then say so and I re-test within seconds — the bounce comes back in ~2 s, so this is a fast loop. Note: the domain's MX already point at Zoho, so if a mailbox is not appearing, check the mailbox is in the *same* Zoho org the domain is verified under. Wire it with `python3 scripts/set-contact.py --email hello@hummelllc.com --verified`.
+2. **Publish `brendan@hummelllc.com` instead** — already proven to accept mail. `python3 scripts/set-contact.py --email brendan@hummelllc.com --verified`. No copy change is needed any more: the visitor-facing text is derived from the configured `email`, so the address lives in exactly one place (2026-09-25 changed the form's pre-launch line from naming `hello@` to naming no address at all — flagged to Brand & Content as UI text, not approved copy).
+3. **Use a form provider** (`endpoint`) — Formspree / Netlify Forms / a Cloudflare Pages function. Then no mailbox is on the critical path at all, and the in-page experience is better than a mailto. `python3 scripts/set-contact.py --endpoint https://…`.
 
-Config object (unchanged shape, three transports):
+`--email` will not publish an address without `--verified`: it refuses, because a dead mailbox silently eats inquiries.
+
+Config object (unchanged shape, three transports; edit via `scripts/set-contact.py`, never by hand):
 
 ```js
 window.HUMMEL_CONTACT = {
@@ -83,7 +85,13 @@ Locked provider (founder, 2026-09-25): Cloudflare Web Analytics — free, cookie
 
 1. Create/sign in at https://dash.cloudflare.com → **Analytics & Logs → Web Analytics → Add a site** → hostname `hummelllc.com` → **Done** (skip any offer to change nameservers).
 2. Open **Manage site** and copy the JS snippet it shows (it contains `"token": "…"`). If prompted, choose **Enable with JS Snippet installation** — not the automatic option, which only works for zones proxied through Cloudflare.
-3. **Either** paste it into the `ANALYTICS SLOT` comment at the top of each page's `<head>` (search for `ANALYTICS SLOT` — all 6 pages have one, with the exact snippet pre-written and only the token missing), **or** send me just the snippet/token and I will wire it in one pass and redeploy. The token is public data, so sharing it is harmless either way.
+3. **Either** paste it into the `ANALYTICS SLOT` comment at the top of each page's `<head>` (search for `ANALYTICS SLOT` — all 6 pages have one, with the exact snippet pre-written and only the token missing), **or** send me just the snippet/token and I will wire it in one pass and redeploy — one command does all six pages:
+
+   ```bash
+   python3 scripts/set-analytics.py --snippet-file snippet.txt    # or --token <32-hex value>
+   ```
+
+   The token is public data, so sharing it is harmless either way. The script is idempotent, replaces the placeholder instead of duplicating it, and refuses account-credential-shaped input (`scripts/preflight.py` also fails the build if a page carries one).
 
 Verification after wiring: `python3 scripts/preflight.py --live <url>` flips Gate 2 from FAIL to ok. Data can lag the first pageview by ~10 minutes; a beacon POST returning `204` means it is working.
 

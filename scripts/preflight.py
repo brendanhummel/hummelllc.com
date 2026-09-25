@@ -136,6 +136,26 @@ def check_guardrails():
     ok("copy guardrails scanned (brief §6 / site-copy §6)")
 
 
+def check_no_secrets():
+    """Nothing on a public page may be a credential. The only token allowed is the
+    public 32-hex Cloudflare Web Analytics site token (checked in check_launch_config)."""
+    patterns = [
+        (r"api[_-]?key", "an API key reference"),
+        (r"Bearer\s+[A-Za-z0-9._\-]{16,}", "a bearer token"),
+        (r"\b[0-9a-fA-F]{37}\b", "a 37-hex value (Cloudflare global API key shape)"),
+        (r"(?:secret|password|passwd|api[_-]?token)[\"']?\s*[:=]\s*[\"'][A-Za-z0-9_\-]{16,}",
+         "a named secret value"),
+    ]
+    for page in ALL_HTML:
+        text = read(page)
+        for pat, label in patterns:
+            m = re.search(pat, text, re.I)
+            if m:
+                fail(f"{page}: looks like {label} ({m.group(0)[:24]}…) — never put credentials on the site; "
+                     f"revoke it and use the public site token only (LAUNCH-RUNBOOK.md §2)")
+    ok("no credentials on any page (public site token only)")
+
+
 # ---------------------------------------------------------------- structure
 def check_structure():
     internal = re.compile(r'(?:href|src)="(/[^"/][^"]*)"')
@@ -199,7 +219,8 @@ def check_launch_config():
     if not has_transport:
         fail("LAUNCH GATE — contact delivery is NOT configured (contact.js endpoint/email both empty): "
              "the Engage form will tell visitors 'delivery goes live with launch'. "
-             "Fix: set endpoint (form provider) or email (once the mailbox is confirmed).")
+             "Fix: python3 scripts/set-contact.py --endpoint <provider URL> "
+             "(or --email <verified mailbox> --verified). See LAUNCH-RUNBOOK.md §1.")
     else:
         ok(f"contact transport configured ({'endpoint' if endpoint and endpoint.group(1) else 'mailto: ' + email.group(1)})")
     if not (sched and sched.group(1)):
@@ -207,14 +228,24 @@ def check_launch_config():
 
     missing = []
     for page in PAGES:
-        text = read(page)
-        if "static.cloudflareinsights.com/beacon.min.js" not in text:
+        # Only live markup counts: the ANALYTICS SLOT note is an HTML comment holding a
+        # template snippet, so strip comments before deciding whether the beacon is installed.
+        live = re.sub(r"<!--.*?-->", "", read(page), flags=re.S)
+        if "static.cloudflareinsights.com/beacon.min.js" not in live:
             missing.append(page)
-        elif re.search(r'"token":\s*"<TOKEN>"', text):
+            continue
+        tok = re.search(r'data-cf-beacon=[\'"]?\{[^}]*"token":\s*"([^"]+)"', live)
+        if not tok:
             missing.append(page)
+        elif not re.fullmatch(r"[0-9a-fA-F]{32}", tok.group(1)):
+            fail(f"{page}: analytics beacon token is not the 32-hex PUBLIC site token — it looks like an "
+                 f"account credential. Remove it from the page and revoke it (Cloudflare dashboard -> "
+                 f"My Profile -> API Tokens): nothing in this build needs one.")
     if missing:
         fail("LAUNCH GATE — Cloudflare Web Analytics beacon not live on: " + ", ".join(missing) +
-             " (locked provider; paste the token snippet from the CF dashboard into each ANALYTICS SLOT)")
+             " (locked provider; needs only the PUBLIC site token from the CF dashboard snippet, "
+             "never an API token). Fix: python3 scripts/set-analytics.py --token <32-hex site token> "
+             "or --snippet-file <file>. See LAUNCH-RUNBOOK.md §2.")
     else:
         ok("analytics beacon live on all pages")
 
@@ -310,6 +341,7 @@ def main():
     args = ap.parse_args()
 
     check_guardrails()
+    check_no_secrets()
     check_structure()
     check_launch_config()
     if args.live:

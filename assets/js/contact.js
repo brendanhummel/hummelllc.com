@@ -2,8 +2,8 @@
    Hummel LLC — contact.js
    Engage form delivery. Three transport modes, one config:
      1. endpoint   → POST JSON to a form provider (Formspree, Netlify, CF Pages)
-     2. email      → open the visitor's mail app addressed to hello@hummelllc.com
-                    (only set once MX exists on the domain — brief §7)
+     2. email      → open the visitor's mail app addressed to the address set below
+                    (only set once MX + that mailbox are confirmed live — brief §7)
      3. (default)  → graceful pre-launch message; no dead inbox, no broken mailto
 
    Flip these in ONE place before launch. See README "Contact & scheduling".
@@ -74,7 +74,9 @@ window.HUMMEL_CONTACT = {
           form.reset();
           status.textContent = "Thanks \u2014 your note is on its way. Expect a reply within a day or two.";
         } else {
-          status.textContent = "Something went wrong sending that. Try emailing hello@hummelllc.com, or come back shortly.";
+          status.textContent = "Something went wrong sending that. " +
+            (cfg.email ? "Try emailing " + cfg.email + ", or come back shortly."
+                       : "Please try again in a moment.");
         }
         btn.disabled = false;
       }).catch(function () {
@@ -99,7 +101,7 @@ window.HUMMEL_CONTACT = {
 
     /* Mode 3: pre-launch default — no dead inbox, no broken mailto. */
     status.textContent =
-      "Thanks, " + name.split(" ")[0] + " \u2014 message delivery goes live with launch (shortly). " +
-      "When it does, hello@hummelllc.com will be live too.";
+      "Thanks, " + name.split(" ")[0] + " \u2014 message delivery goes live with launch, " +
+      "so this one can\u2019t be sent yet. Please check back soon.";
   });
 })();

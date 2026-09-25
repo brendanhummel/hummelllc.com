@@ -51,10 +51,41 @@ Design tokens (colors, radius, type) live in `assets/css/site.css` under `:root`
 All wiring is one config object at the top of `assets/js/contact.js` (`window.HUMMEL_CONTACT`):
 
 - `endpoint`: form provider URL (Formspree / Netlify Forms / Cloudflare Pages function). While empty, the form falls back to…
-- `email`: set to `hello@hummelllc.com` **only once a mailbox/MX is confirmed live** — then the form opens a mailto instead. Until either is set, submitting shows a friendly pre-launch note (no dead inbox, no broken mailto).
-- `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form. Note: README's earlier note said Zoho MX (mx1–3.zoho.com) resolves for the domain — whether a Zoho mailbox exists is unconfirmed (brief §7). Verify before setting `email`.
+- `email`: the address the form opens in the visitor's mail app — set it **only once that mailbox is confirmed to accept mail** (send one test, confirm no bounce). Until `endpoint` or `email` is set, submitting shows a short pre-launch note (no dead inbox, no broken mailto).
+- `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form.
 
-Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 — free, cookie-free, no banner needed). Each page head has an `ANALYTICS SLOT` comment; to go live: create a free Cloudflare account, **Analytics & Logs → Web Analytics → Add a site** → hostname `hummelllc.com`, then copy the JS snippet from **Manage site** and paste it into the slot on all 6 pages. **No Cloudflare API token is required** — the `token` in the snippet is a public site token (it is visible in page source on every site using CWA) and grants no account permissions. No nameserver change, no Cloudflare zone, DNS stays at GoDaddy. Nothing ships without the snippet. Site works fully without it. Full detail: `LAUNCH-RUNBOOK.md` §2.
+**Set these with the helper, not by hand:**
+
+```bash
+python3 scripts/set-contact.py --show                                   # what is configured now
+python3 scripts/set-contact.py --endpoint https://formspree.io/f/abc123  # provider transport
+python3 scripts/set-contact.py --email brendan@hummelllc.com --verified  # mailto transport
+python3 scripts/set-contact.py --schedule https://cal.com/brendan/30min
+```
+
+`--email` refuses to publish an address unless you also pass `--verified`, because a mailto to a dead address is worse than no transport at all: the visitor's mail app opens, the bounce goes back to *them*, and the inquiry is lost while the page looks fine. (That is exactly how `hello@hummelllc.com` failed on 2026-09-25 — hard `550 5.1.1 User does not exist` from `mx.zoho.com`, twice; `brendan@hummelllc.com` was accepted in the same test.)
+
+The visitor-facing text is derived from `email`, so the address is configured in exactly one place and cannot drift. Behaviour of all three transports is covered by `node scripts/test-contact-modes.js`.
+
+Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 — free, cookie-free, no banner needed). Each page head has an `ANALYTICS SLOT` comment holding the exact snippet with only the token missing. To go live: create a free Cloudflare account, **Analytics & Logs → Web Analytics → Add a site** → hostname `hummelllc.com` (decline any offer to change nameservers), then copy the JS snippet from **Manage site** and install it on all 6 pages with one command:
+
+```bash
+python3 scripts/set-analytics.py --snippet-file snippet.txt   # or --token <32-hex value>
+```
+
+The script is idempotent (re-running reports "already current"), replaces the placeholder rather than duplicating it, and **refuses anything that looks like account credentials** — see the security note below. **No Cloudflare API token is required.** The `token` in the snippet is a *public site token*: it is visible in the page source of every site using CWA and grants no account permissions. No nameserver change, no Cloudflare zone, DNS stays at GoDaddy. Nothing ships without the snippet; the site works fully without it. Full detail: `LAUNCH-RUNBOOK.md` §2.
+
+> **Never put a credential on this site, and never paste one into an issue comment or chat.** Cloudflare API tokens and API keys are account-level credentials; nothing in this build needs one, ever. `scripts/set-analytics.py` and `scripts/preflight.py` both reject API-token-shaped input, and preflight fails the build if any page carries one. If you created an API token for this work, revoke it: Cloudflare dashboard → My Profile → API Tokens.
+
+## Scripts
+
+| Script | What it does |
+|---|---|
+| `scripts/preflight.py` | The launch gate — copy guardrails, structure, credential scan, the three launch gates, `--live` route fetches, `--dns` cutover check. Run it before launch and after any change. |
+| `scripts/set-analytics.py` | Installs the Cloudflare Web Analytics beacon on all 6 pages from a token or snippet. Idempotent; refuses account-credential-shaped input. |
+| `scripts/set-contact.py` | Sets the Engage form's `endpoint` / `email` / `scheduleUrl` (Gate 1). `--email` requires `--verified`. `--show` prints the current config. |
+| `scripts/test-contact-modes.js` | `node scripts/test-contact-modes.js` — runs the real `contact.js` in a small DOM shim and asserts what a visitor sees in each of the three transports. |
+| `scripts/make-logo-assets.py` | Regenerates the header logo, favicons and OG card from the founder's `HummelLLCLogo.png`. |
 
 ## SEO & assets
 
@@ -80,7 +111,7 @@ python3 scripts/preflight.py --live https://brendanhummel.github.io/hummelllc.co
 python3 scripts/preflight.py --live <base> --dns               # + DNS vs the launch target
 ```
 
-Exit code 0 = no FAIL. It checks: the site-copy §2 banned-word list (24/7 and always-on allowed only inside the approved negations), HIPAA/CJIS/NIST absent as credentials, no certs/client counts/revenue, both attributed market stats present, the pricing benchmark label, one `<h1>` per page, meta/canonical/OG/skip links, every internal link resolving on disk, sitemap/robots completeness, and the three launch gates:
+Exit code 0 = no FAIL. It checks: the site-copy §2 banned-word list (24/7 and always-on allowed only inside the approved negations), HIPAA/CJIS/NIST absent as credentials, no certs/client counts/revenue, both attributed market stats present, the pricing benchmark label, one `<h1>` per page, meta/canonical/OG/skip links, every internal link resolving on disk, sitemap/robots completeness, **no credentials on any page** (API-key/bearer/secret shapes; the analytics token must be the 32-hex public site token), and the three launch gates:
 
 1. **Contact delivery configured** (`contact.js` `endpoint` or `email`) — otherwise the Engage form tells visitors delivery "goes live with launch", i.e. the site cannot take inquiries.
 2. **Cloudflare Web Analytics beacon** live on all 6 pages (no `<TOKEN>` placeholder left).
