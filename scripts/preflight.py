@@ -220,8 +220,10 @@ def check_launch_config():
 
     if re.search(r"(?:©|&copy;)\s*\d{4}\s+Hummel LLC", read("index.html")):
         warn("legal-name guardrail (brief rev 4 §7): footer reads '© 2026 Hummel LLC' — an ownership "
-             "claim naming the unformed entity. Approved copy (site-copy §3.7) and trade-name usage, "
-             "so it stays as-is until Brand & Content / founder confirm. Kept visible so it cannot slip past launch.")
+             "claim naming the unformed entity. RESOLVED 2026-09-25: founder reviewed and chose to KEEP "
+             "it as approved copy (trade-name usage; LLC not filed). Stays a WARN so the decision is "
+             "re-surfaced when the LLC is formed — at that point the line becomes accurate and the WARN "
+             "can be retired.")
     ok("legal-name guardrail checked")
 
 

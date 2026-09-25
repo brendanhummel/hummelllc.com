@@ -10,7 +10,16 @@
    ========================================================================== */
 window.HUMMEL_CONTACT = {
   endpoint: "",      // e.g. "https://formspree.io/f/abcdwxyz" — form provider URL
-  email: "",         // e.g. "hello@hummelllc.com" — ONLY when domain MX is live
+  /* email: founder chose hello@hummelllc.com (2026-09-25), but it does NOT exist:
+     live delivery test from this machine bounced twice with "550 5.1.1 User does not
+     exist" from mx.zoho.com — the server for hummelllc.com (verified 2026-09-25
+     16:38 and 16:42 EDT). Do NOT set this until a mailbox actually accepts mail:
+     a mailto to a dead address silently loses every inquiry and looks like it works.
+     As of the same test, brendan@hummelllc.com WAS accepted by Zoho with no bounce —
+     pending founder confirmation of which address the site should publish, plus a
+     copy change from Brand & Content (site-copy §3.6 names hello@ in the fallback text).
+     Re-run: send one mail to the address from any external account and confirm no bounce. */
+  email: "",
   scheduleUrl: ""    // e.g. "https://cal.com/brendan/30min" — 30-min intro call link
 };
 
