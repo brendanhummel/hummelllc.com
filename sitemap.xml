@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Update when pages change. All URLs reference the production domain (DNS cutover unlocks them). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://hummelllc.com/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://hummelllc.com/what-we-do.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://hummelllc.com/who-its-for.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://hummelllc.com/how-it-works.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://hummelllc.com/about.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://hummelllc.com/engage.html</loc><changefreq>monthly</changefreq></url>
+</urlset>
