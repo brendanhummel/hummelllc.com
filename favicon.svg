@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hummel LLC">
-  <!-- PLACEHOLDER MARK: replace with finalized logo (iCloud → Hummelllc/HummelLLCLogo.png) when Brand & Content Lead locks it. -->
-  <rect width="64" height="64" rx="12" fill="#1f5b8a"/>
-  <text x="32" y="41" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="700" text-anchor="middle" fill="#ffffff">H</text>
+  <!-- Interim mark: ink tile + paper H. Swap when Brand & Content Lead locks the logo (iCloud Drive → HummelLLC folder). Palette P-A. -->
+  <rect width="64" height="64" rx="12" fill="#232B36"/>
+  <text x="32" y="45" font-family="Inter, Helvetica, Arial, sans-serif" font-size="36" font-weight="600" text-anchor="middle" fill="#FAF8F4">H</text>
 </svg>

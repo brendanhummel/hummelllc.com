@@ -1,24 +1,26 @@
 /* ==========================================================================
    Hummel LLC — site.css
-   No-build static site. Mobile-first, accessible, zero JavaScript.
-   Design tokens live at the top: swap brand colors here when Brand & Content
-   Lead locks the treatment (HUM-6). Placeholder palette until then.
+   No-build static site. Mobile-first, accessible, zero JS required.
+   Brand treatment: P-A "Slate & Sage" (site-copy §4) — ink #232B36,
+   paper #FAF8F4, accent #3E6B4F (CTAs/links only), mono for eyebrows.
+   Swap tokens here if the style lock (HUM-6) lands on P-B instead.
    ========================================================================== */
 
-/* ---------- Design tokens (PLACEHOLDER until brand lock) ---------- */
+/* ---------- Design tokens ---------- */
 :root {
-  --color-bg: #ffffff;
-  --color-surface: #f4f6f5;          /* soft neutral band */
-  --color-ink: #1c2428;              /* near-black, cool slate */
-  --color-ink-soft: #4a555c;
-  --color-accent: #1f5b8a;           /* calm deep blue — PLACEHOLDER */
-  --color-accent-ink: #ffffff;
-  --color-line: #d8ded9;
-  --color-focus: #1f5b8a;
+  --color-paper: #FAF8F4;            /* warm off-white */
+  --color-surface: #EFEAE1;          /* warm band */
+  --color-ink: #232B36;              /* slate navy */
+  --color-ink-soft: #4A5561;
+  --color-accent: #3E6B4F;           /* deep sage green — CTAs/links only */
+  --color-accent-ink: #FFFFFF;
+  --color-line: #D6CFC2;
+  --color-focus: #3E6B4F;
   --radius: 10px;
   --space: 1rem;
   --content-max: 64rem;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --leading: 1.6;
 }
 
@@ -30,6 +32,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  color-scheme: light;
 }
 
 body {
@@ -37,8 +40,8 @@ body {
   font-family: var(--font);
   line-height: var(--leading);
   color: var(--color-ink);
-  background: var(--color-bg);
-  font-size: 1.0625rem; /* ~17px comfortable read size */
+  background: var(--color-paper);
+  font-size: 1.0625rem; /* 17px — brand read size */
 }
 
 /* Respect users who prefer reduced motion */
@@ -54,7 +57,9 @@ body {
   border-radius: 2px;
 }
 
-::selection { background: var(--color-accent); color: #fff; }
+::selection { background: var(--color-accent); color: var(--color-accent-ink); }
+
+img { max-width: 100%; height: auto; }
 
 /* ---------- Layout helpers ---------- */
 .container {
@@ -75,7 +80,7 @@ body {
   top: 0;
   z-index: 100;
   background: var(--color-ink);
-  color: #fff;
+  color: var(--color-paper);
   padding: 0.75rem 1.25rem;
   border-radius: 0 0 var(--radius) 0;
   text-decoration: none;
@@ -88,27 +93,32 @@ body {
 /* ---------- Header / nav ---------- */
 .site-header {
   border-block-end: 1px solid var(--color-line);
-  background: var(--color-bg);
+  background: var(--color-paper);
 }
 
 .brand {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 600;               /* brand: 600, sentence case, no icon */
   letter-spacing: 0.01em;
   text-decoration: none;
   color: var(--color-ink);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  white-space: nowrap;
 }
-.brand img.brand-mark { width: 1.6rem; height: 1.6rem; }
+.brand-sub {
+  font-weight: 600;
+  font-variant-caps: small-caps;  /* "LLC" understated, per brand direction */
+  letter-spacing: 0.14em;
+  font-size: 0.82em;
+  margin-inline-start: 0.15em;
+}
 
 .header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.5rem 1rem;
+  padding-block: 0.9rem;
 }
 
 .main-nav ul {
@@ -117,12 +127,12 @@ body {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1rem;
+  gap: 0.15rem 0.35rem;
 }
 
 .main-nav a {
   display: inline-block;
-  padding: 0.4rem 0.6rem;
+  padding: 0.4rem 0.65rem;
   border-radius: var(--radius);
   color: var(--color-ink);
   text-decoration: none;
@@ -135,11 +145,7 @@ body {
   color: var(--color-accent-ink);
   font-weight: 600;
 }
-
-/* Mobile: nav collapses to a tidy wrap; no hamburger needed at 6 items */
-@media (min-width: 44rem) {
-  .main-nav ul { gap: 0.25rem 1.25rem; }
-}
+.main-nav a[aria-current="page"]:hover { background: var(--color-accent); }
 
 /* ---------- Typography ---------- */
 h1, h2, h3 {
@@ -152,25 +158,26 @@ h2 { font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
 h3 { font-size: 1.125rem; }
 
 .lead {
-  font-size: clamp(1.1rem, 2.3vw, 1.35rem);
+  font-size: clamp(1.1rem, 2.3vw, 1.32rem);
   color: var(--color-ink);
-  max-width: 42rem;
+  max-width: 44rem;
 }
 
 .eyebrow {
   display: inline-block;
-  font-size: 0.85rem;
+  font-family: var(--font-mono);  /* mono only for eyebrows — brand §4 */
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-ink-soft);
-  margin: 0;
+  margin: 0 0 0.75rem;
 }
 
 /* ---------- Buttons / links ---------- */
 .btn {
   display: inline-block;
-  padding: 0.75rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   border-radius: var(--radius);
   background: var(--color-accent);
   color: var(--color-accent-ink);
@@ -178,6 +185,7 @@ h3 { font-size: 1.125rem; }
   font-weight: 600;
   border: 0;
   cursor: pointer;
+  font-size: 1rem;
 }
 .btn:hover { filter: brightness(1.08); }
 .btn.secondary {
@@ -185,17 +193,20 @@ h3 { font-size: 1.125rem; }
   color: var(--color-ink);
   box-shadow: inset 0 0 0 1.5px var(--color-ink);
 }
+.btn.secondary:hover { background: var(--color-surface); filter: none; }
 
 a { color: var(--color-accent); text-underline-offset: 0.15em; }
 
-/* ---------- Cards / bands ---------- */
+/* ---------- Cards / bands / sections ---------- */
 .band {
   background: var(--color-surface);
   border-radius: var(--radius);
-  padding: 1.5rem 1.25rem;
+  padding: 1.75rem 1.5rem;
   margin-block: 1.5rem;
 }
-.band--tint { background: color-mix(in srgb, var(--color-accent) 6%, #fff); }
+
+.section-block { margin-block: 2.75rem; }
+.section-block h2 { margin-block-start: 0; }
 
 .card-grid {
   display: grid;
@@ -206,7 +217,7 @@ a { color: var(--color-accent); text-underline-offset: 0.15em; }
   .card-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 60rem) {
-  .card-grid { grid-template-columns: repeat(3, 1fr); }
+  .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
 }
 
 .card {
@@ -216,37 +227,146 @@ a { color: var(--color-accent); text-underline-offset: 0.15em; }
   padding: 1.25rem;
 }
 .card h3 { margin-block-start: 0; }
+.card p { margin-block-end: 0; }
+
+/* Strip of four (home) */
+.strip {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  margin-block: 1.25rem;
+}
+@media (min-width: 44rem) { .strip { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 60rem) { .strip { grid-template-columns: repeat(4, 1fr); } }
+
+.strip-item .strip-index {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  font-weight: 600;
+  display: block;
+  margin-block-end: 0.35rem;
+}
+.strip-item p { margin-block: 0.35rem 0; }
+
+/* Numbered process steps (how-it-works) */
+.steps { list-style: none; margin: 1.25rem 0 0; padding: 0; counter-reset: step; }
+.steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem 1.1rem;
+  padding-block: 1.25rem;
+  border-block-end: 1px solid var(--color-line);
+}
+.steps li:first-child { padding-block-start: 0; }
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-paper);
+  background: var(--color-accent);
+  border-radius: 6px;
+  padding: 0.28rem 0.5rem;
+  align-self: start;
+  line-height: 1.4;
+}
+.steps h3 { margin-block: 0 0.35rem; }
+.steps p { margin-block: 0; }
 
 /* ---------- Lists ---------- */
-ul.tick { list-style: none; padding-inline-start: 1.1rem; }
+ul.tick { list-style: none; padding-inline-start: 0.2rem; }
+ul.tick li {
+  padding-inline-start: 1.9rem;
+  position: relative;
+  margin-block: 0.6rem;
+}
 ul.tick li::before {
-  content: "\2713\00a0\00a0";
+  content: "\2713";
+  position: absolute;
+  left: 0;
   color: var(--color-accent);
   font-weight: 700;
 }
 ul.plain { list-style: disc; padding-inline-start: 1.4rem; }
+ul.plain li { margin-block: 0.45rem; }
+ul.plain li::marker { color: var(--color-accent); }
 
 /* ---------- Hero (home) ---------- */
 .hero {
   padding-block: clamp(3rem, 8vw, 5.5rem) clamp(2rem, 5vw, 3.5rem);
-  background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-surface) 100%);
+  background: linear-gradient(180deg, var(--color-paper) 0%, var(--color-surface) 100%);
 }
-.hero h1 { margin-block-end: 0.9rem; }
-.hero .actions { margin-block-start: 1.75rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.hero h1 { margin-block-end: 1rem; }
+.hero .lead { margin-block-end: 0; }
+.hero .actions { margin-block-start: 1.9rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
 
-/* ---------- Footer ---------- */
+/* ---------- Footer (same on every page) ---------- */
 .site-footer {
   border-block-start: 1px solid var(--color-line);
-  padding-block: 2rem 3rem;
+  padding-block: 2.25rem 3rem;
+  margin-block-start: 3.5rem;
   font-size: 0.925rem;
   color: var(--color-ink-soft);
 }
-.site-footer .container { display: flex; flex-wrap: wrap; gap: 0.75rem 2rem; justify-content: space-between; }
+.site-footer .container { display: flex; flex-direction: column; gap: 0.4rem; }
+.site-footer .honesty {
+  color: var(--color-ink);
+  font-size: 0.95rem;
+}
 .site-footer a { color: var(--color-ink-soft); }
 
 /* ---------- Page hero for inner pages ---------- */
-.page-head { padding-block: 2.25rem 1rem; }
+.page-head { padding-block: 2.5rem 1rem; }
 .page-head h1 { margin-block-end: 0.7rem; }
+
+/* ---------- Contact form (engage) ---------- */
+.contact-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.1rem;
+  max-width: 40rem;
+}
+.contact-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.contact-form label .req { color: var(--color-accent); }
+.contact-form label .opt {
+  font-weight: 400;
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+}
+.contact-form input,
+.contact-form textarea {
+  font: inherit;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.65rem 0.8rem;
+  width: 100%;
+}
+.contact-form input:focus-visible,
+.contact-form textarea:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 1px;
+  border-color: var(--color-accent);
+}
+.contact-form textarea { min-height: 8rem; resize: vertical; }
+.contact-form .form-status {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  min-height: 1.4em;
+}
 
 /* ---------- Utilities ---------- */
 .muted { color: var(--color-ink-soft); }
@@ -258,4 +378,14 @@ ul.plain { list-style: disc; padding-inline-start: 1.4rem; }
   font-size: 0.95rem;
 }
 .mt-0 { margin-block-start: 0; }
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip: rect(0 0 0 0); clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
 .mb-0 { margin-block-end: 0; }
+.prose { max-width: 46rem; } /* comfortable reading measure for long paragraphs */
+.actions { margin-block-start: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }

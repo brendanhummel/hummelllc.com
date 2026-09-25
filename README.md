@@ -1,52 +1,66 @@
 # hummelllc.com — Hummel LLC website
 
-Static, no-build website for Hummel LLC. Deploys automatically to GitHub Pages on every push to `main`.
+Static, no-build website for Hummel LLC. Plain HTML + one stylesheet + one small JS file — nothing to install, nothing to compile, deploys to any static host as-is.
 
-- Staging URL: `https://brendanhummel.github.io/hummelllc.com/`
-- Production domain: `https://hummelllc.com/` (DNS cutover scheduled at launch, roadmap Day 26–30)
+Copy source of truth: document `brief` (HUM-2, rev 2, APPROVED 2026-09-25). Page copy: document `site-copy` (HUM-6, rev 1). All pages rebuilt against `site-copy` §3 verbatim (A1 hero). Nothing here invents claims — see Content rules below.
 
-## Pages (brief §8 page map)
+- Staging (GitHub Pages): `https://brendanhummel.github.io/hummelllc.com/`
+- Production domain: `https://hummelllc.com/` (DNS cutover at launch, roadmap days 26–30)
 
-| File | Page |
-|------|------|
-| `index.html` | Home — "Your part-time IT leader." |
-| `what-we-do.html` | What We Do |
-| `who-its-for.html` | Who It's For |
-| `how-it-works.html` | How It Works |
-| `about.html` | About |
-| `engage.html` | Engage |
-| `404.html` | Not-found page |
+## Pages
+
+| File | Page | Slug |
+|------|------|------|
+| `index.html` | Home — "Your part-time IT leader." (A1) | `/` |
+| `what-we-do/index.html` | What We Do | `/what-we-do/` |
+| `who-its-for/index.html` | Who It's For | `/who-its-for/` |
+| `how-it-works/index.html` | How It Works | `/how-it-works/` |
+| `about/index.html` | About — founder-first | `/about/` |
+| `engage/index.html` | Engage — form + intro call | `/engage/` |
+| `404.html` | Not-found page | any miss |
 
 ## How to update content
 
-Everything is plain HTML + one stylesheet. No build step, nothing to install.
+Everything is plain HTML. No build step, nothing to install.
 
-1. Edit the page's `.html` file (e.g. open `about.html`, change a sentence, save).
-2. Commit and push:
+1. Edit the page file (e.g. open `about/index.html`, change a sentence, save).
+2. Commit and push (deploys automatically from `main`):
    ```bash
    git add -A && git commit -m "Update about copy" && git push
    ```
-3. The GitHub Actions workflow (`Deploy to GitHub Pages`) publishes automatically (~1 min).
-4. Verify at the staging URL; production follows at DNS cutover.
+3. Verify at the staging URL; production follows at DNS cutover.
 
-Shared page furniture (header/nav/footer) is duplicated per page intentionally — six pages, trivial to edit. If pages grow past ~10, migrate to a tiny template step (e.g. Eleventy) and this file documents that decision.
+Shared page furniture (header/nav/footer) is duplicated per page intentionally — seven small files, trivial to edit. If pages grow past ~10, migrate to a tiny template step (e.g. Eleventy) — revisit then, not now.
 
-Design tokens (colors, radius, type) live in `assets/css/site.css` under `:root` — swap brand colors in one place when the Brand & Content Lead locks the treatment.
+Design tokens (colors, radius, type) live in `assets/css/site.css` under `:root`. Brand treatment applied: **P-A Slate & Sage** — ink `#232B36`, paper `#FAF8F4`, accent `#3E6B4F` (CTAs/links only), mono eyebrows (site-copy §4). If the style lock lands on P-B (ember), swap the three color tokens — nothing else changes.
 
-## Content rules (MANDATORY — see company brief §6)
+## Content rules (MANDATORY — brief §6 / site-copy §6)
 
-- **Source of truth:** the company brief (`brief`, rev 2 — approved 2026-09-25). No copy ships that isn't in the brief.
-- **Claim guardrails:** PCI environment experience: proven, may be stated plainly. HIPAA/CJIS/NIST: transferable awareness only — never claim certification or audit-level qualification. Market stats only as attributable, labeled estimates. Never imply 24/7 support or always-on ops (year one = advisor + scoped work, ~5 hrs/wk).
-- Copy blocks awaiting Brand & Content Lead (HUM-6) are marked `<!-- COPY: ... -->` in the HTML. Contact details on `engage.html` are pending founder intake and must be filled before staging review.
+- **Source of truth:** the brief. No copy ships that isn't in it; any change goes through the brief first.
+- **PCI:** proven — stated plainly ("payment-card (PCI) environments"). **HIPAA/CJIS/NIST:** never rendered as credentials — acronyms absent from page copy; plain language only ("healthcare, legal, and finance").
+- **Market stats:** exactly two on-page, both attributed as directional context (Verizon 2025 DBIR on Home; industry research 2025–26 on Who It's For). Pricing line carries "(public benchmarks, Sept 2026)".
+- **No 24/7 / always-on implication:** the only occurrences are explicit negations in approved copy ("not 24/7 support"; "not an always-on, ticket-driven MSP"). Do not add more.
+- **Banned words** (both approved voices): 24/7 (except negations above), always-on (except the non-MSP block), best-in-class, enterprise-grade, seamless, robust, trusted by N clients, guaranteed, affordable plans starting at.
+- No certs, client counts, headcounts, or revenue on any page.
 
-## SEO & analytics
+## Contact & scheduling (engage)
 
-- Titles/descriptions/canonical/OpenGraph per page; canonical URLs point at the production domain.
-- `sitemap.xml` + `robots.txt` live at site root.
-- Analytics: provider TBD at stack approval (Plausible or Cloudflare Web Analytics). Until wired, `index.html` carries a placeholder comment — no tracking script ships without a decision.
+All wiring is one config object at the top of `assets/js/contact.js` (`window.HUMMEL_CONTACT`):
+
+- `endpoint`: form provider URL (Formspree / Netlify Forms / Cloudflare Pages function). While empty, the form falls back to…
+- `email`: set to `hello@hummelllc.com` **only once a mailbox/MX is confirmed live** — then the form opens a mailto instead. Until either is set, submitting shows a friendly pre-launch note (no dead inbox, no broken mailto).
+- `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form. Note: README's earlier note said Zoho MX (mx1–3.zoho.com) resolves for the domain — whether a Zoho mailbox exists is unconfirmed (brief §7). Verify before setting `email`.
+
+Analytics: provider TBD (Plausible / Cloudflare Web Analytics). Each page head has an `ANALYTICS SLOT` comment — drop the approved snippet there once decided; nothing ships without a decision.
+
+## SEO & assets
+
+- Titles/descriptions/canonical/OG per page (site-copy §3.7); canonical URLs point at the production domain with clean slugs.
+- `sitemap.xml` + `robots.txt` at root.
+- `assets/og-image.png` — interim wordmark-on-slate social card (1200×630), generated from the P-A palette. Regenerate or replace when the logo lands; `og:image` is referenced from every page head.
 
 ## DNS / launch facts
 
-- Registrar: GoDaddy (nameservers ns23/ns24.domaincontrol.com — parked A records as of 2026-09-25).
-- Email MX today: Zoho (mx1–3.zoho.com).
-- Cutover (launch): add custom domain in Pages settings + point DNS at GitHub Pages (A records 185.199.108.153/154/155/156 and/or the `hummelllc.com` CNAME to `brendanhummel.github.io`) — full runbook in HUM-5 comments.
+- Registrar: GoDaddy (nameservers ns23/ns24.domaincontrol.com — parked as of 2026-09-25).
+- Email MX today: Zoho (mx1–3.zoho.com) — mailbox existence unconfirmed.
+- Cutover (launch): add custom domain in host settings + point DNS at the host. Full runbook lives in HUM-5 issue comments.
