@@ -69,3 +69,23 @@ Analytics: **LOCKED = Cloudflare Web Analytics** (founder decision 2026-09-25 �
 - Email MX today: Zoho (mx1–3.zoho.com) — mailbox existence unconfirmed.
 - **Launch host: GitHub Pages (LOCKED by founder — stack interaction 2026-09-25).** Staging URL becomes the production host; DNS cutover = add a `CNAME` from `www` to `brendanhummel.github.io` at GoDaddy (or use GoDaddy's web-forwarding to `www`), plus enable the custom domain in the Pages settings (Settings → Pages → Custom domain). Preserve existing MX/TXT records when editing DNS (brief §7).
 - Full runbook lives in HUM-5 issue comments.
+
+## Preflight / launch gate
+
+Run this before launch and after any copy change — it is the guardrail net, so a regression can't ship quietly:
+
+```bash
+python3 scripts/preflight.py                                   # copy guardrails + structure + launch config
+python3 scripts/preflight.py --live https://brendanhummel.github.io/hummelllc.com/
+python3 scripts/preflight.py --live <base> --dns               # + DNS vs the launch target
+```
+
+Exit code 0 = no FAIL. It checks: the site-copy §2 banned-word list (24/7 and always-on allowed only inside the approved negations), HIPAA/CJIS/NIST absent as credentials, no certs/client counts/revenue, both attributed market stats present, the pricing benchmark label, one `<h1>` per page, meta/canonical/OG/skip links, every internal link resolving on disk, sitemap/robots completeness, and the three launch gates:
+
+1. **Contact delivery configured** (`contact.js` `endpoint` or `email`) — otherwise the Engage form tells visitors delivery "goes live with launch", i.e. the site cannot take inquiries.
+2. **Cloudflare Web Analytics beacon** live on all 6 pages (no `<TOKEN>` placeholder left).
+3. **DNS** (`--dns`): apex A records at GitHub Pages, `www` CNAME at `brendanhummel.github.io`, and MX/TXT/SPF still intact (brief §7 — the Zoho mail must survive the web cutover). Also confirms no CAA record blocks the cert issuer.
+
+WARNs (scheduling link, parked DNS, the `© 2026 Hummel LLC` footer line) need a human decision, not a code fix — see the runbook for owner and severity.
+
+> `404.html` keeps **root-absolute** refs on purpose (it is served at arbitrary depths in production). The staging URL lives under `/hummelllc.com/`, where those refs 404, so the page carries a small inline `<style>` fallback to stay readable there. Do not "fix" it to relative refs — they cannot work at arbitrary depth.

@@ -9,6 +9,23 @@
   <link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/favicon-180.png">
   <link rel="stylesheet" href="/assets/css/site.css">
+  <!-- Inline fallback: this page is served at arbitrary depths, so its refs must stay
+       root-absolute (correct in production). On the staging URL the site lives under
+       /hummelllc.com/, where root-absolute refs 404 — this keeps the page readable there.
+       Fallback only; the linked stylesheet remains the real source of styling. -->
+  <style>
+    body{margin:0;background:#FAF8F4;color:#232B36;font:17px/1.6 Inter,-apple-system,"Segoe UI",Roboto,sans-serif}
+    .container{max-width:1080px;margin:0 auto;padding:0 24px}
+    .site-header{padding:20px 0;border-bottom:1px solid #E3DED4}
+    .site-header img{height:46px;width:auto}
+    a.brand{color:inherit;text-decoration:none;font-weight:600}
+    .eyebrow{font:600 13px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#3E6B4F}
+    h1{margin:.3em 0 .4em;font-size:clamp(30px,5vw,46px);line-height:1.15}
+    .lead{font-size:19px;max-width:60ch}
+    .btn{display:inline-block;background:#3E6B4F;color:#fff;text-decoration:none;padding:14px 22px;border-radius:8px;font-weight:600}
+    .site-footer{margin-top:64px;padding:28px 0;border-top:1px solid #E3DED4;font-size:14px}
+    .site-footer span{display:block;margin-bottom:6px}
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
