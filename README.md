@@ -4,8 +4,8 @@ Static, no-build website for Hummel LLC. Plain HTML + one stylesheet + one small
 
 Copy source of truth: document `brief` (HUM-2, rev 4, APPROVED — intake COMPLETE 2026-09-25: hosting = GoDaddy, logo FINAL = HummelLLCLogo.png, LLC NOT YET FILED → legal-name guardrail below). Page copy: document `site-copy` (HUM-6, rev 2 — FINAL, style locked by founder 2026-09-25: tagline A1, voice V1 steady senior advisor, accent P-A slate & sage). All pages built against `site-copy` §3 verbatim (A1 hero). Nothing here invents claims — see Content rules below.
 
-- Staging (GitHub Pages): `https://brendanhummel.github.io/hummelllc.com/`
-- Production domain: `https://hummelllc.com/` (DNS cutover at launch, roadmap days 26–30)
+- Production (LIVE since 2026-09-27): `https://hummelllc.com/` — DNS cutover complete, verified 2026-09-28 (`postcutover.py` → PRODUCTION VERIFIED, 19 ok / 0 warn / 0 fail). Valid Let's Encrypt certificate covering **both** `hummelllc.com` and `www.hummelllc.com`; `http://` and `www` 301 to the apex.
+- Staging (still served, not linked anywhere): `https://brendanhummel.github.io/hummelllc.com/`
 
 ## Pages
 
@@ -101,7 +101,7 @@ The script is idempotent (re-running reports "already current"), replaces the pl
 
 - Registrar + hosting account: GoDaddy (brief rev 4 — both confirmed; nameservers ns23/ns24.domaincontrol.com, parked as of 2026-09-25). The GoDaddy *hosting plan* stays unused — the site runs on GitHub Pages.
 - Email MX today: Zoho (mx1–3.zoho.com) — `hello@hummelllc.com` **live and wired 2026-09-25** (mailbox created, no bounce on re-test; the form uses it).
-- **Launch host: GitHub Pages — LOCKED by founder 2026-09-25, re-confirmed 2026-09-27** (founder decision "keep GitHub Pages"; no Cloudflare Pages migration, no API token needed). Staging URL becomes the production host; DNS cutover = add a `CNAME` from `www` to `brendanhummel.github.io` at GoDaddy (or use GoDaddy's web-forwarding to `www`), plus enable the custom domain in the Pages settings (Settings → Pages → Custom domain). Preserve existing MX/TXT records when editing DNS (brief §7).
+- **Launch host: GitHub Pages — LOCKED by founder 2026-09-25, re-confirmed 2026-09-27** (founder decision "keep GitHub Pages"; no Cloudflare Pages migration, no API token needed). **Cutover DONE 2026-09-27, fully verified 2026-09-28:** apex A → four GitHub IPs, `www` CNAME → `brendanhummel.github.io`, custom domain `hummelllc.com`, Enforce HTTPS on, certificate `approved` for both hostnames. MX/TXT were preserved (Zoho mail intact). If the Pages certificate ever loses the `www` SAN, the fix is a one-off read-only visit to Settings → Pages in a browser — the REST API cannot re-order it (see LAUNCH-RUNBOOK.md §3).
 - Full runbook lives in HUM-5 issue comments.
 
 ## Preflight / launch gate
