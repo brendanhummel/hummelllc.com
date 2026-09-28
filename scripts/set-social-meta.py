@@ -4,8 +4,11 @@ Hummel LLC — share-card + structured-data meta.
 
 WHY: every page carries og:title/description/image/url, but nothing told X/Slack/
 Teams to render the image (no twitter:card) and nothing told a search engine what
-the business entity is (no JSON-LD). Both are add-only tags built from copy that is
-already on the page — no new business claims are introduced here.
+the business entity is (no JSON-LD). The share-card tags are derived from copy
+already on the page. The structured-data node is NOT derived from anything here:
+it is installed verbatim from scripts/doctrine_nap.py, which quotes `nap-doctrine`
+rev 3 field by field — a crawler reading the node must get the doctrine value, not
+a paraphrase of the page copy.
 
     python3 scripts/set-social-meta.py            # add/refresh the tags
     python3 scripts/set-social-meta.py --check     # verify only (exit 1 if missing)
@@ -18,6 +21,8 @@ import argparse
 import os
 import re
 import sys
+
+import doctrine_nap
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -74,21 +79,24 @@ def meta_tags(text, path):
 
 
 def jsonld(text, path):
-    """Organization node for the home page — every value is already public on-page."""
-    desc = req(r'name="description" content="([^"]*)"', text, path, "meta description")
-    email = req(r'email:\s*"([^"]+)"', read("assets/js/contact.js"), "assets/js/contact.js", "contact email")
+    """The entity node for the home page.
+
+    Values come from scripts/doctrine_nap.py, which quotes `nap-doctrine` rev 3
+    field by field — nothing here is written from scratch, and the block is a
+    closed key set. This function deliberately does NOT derive anything from the
+    page copy: the node must not drift when marketing copy is edited.
+    """
+    # Guard: the published email lives in the doctrine and in contact.js. If the
+    # site's own contact address ever changes, the doctrine changes first and this
+    # stops the build rather than publishing two different addresses.
+    site_email = req(r'email:\s*"([^"]+)"', read("assets/js/contact.js"), "assets/js/contact.js", "contact email")
+    if site_email != doctrine_nap.EMAIL:
+        sys.exit(f"assets/js/contact.js publishes {site_email!r} but nap-doctrine §5 says "
+                 f"{doctrine_nap.EMAIL!r} — fix the doctrine first (nap-doctrine §6.1), then this.")
     return (
         '<script type="application/ld+json">\n'
-        + "{\n"
-        + '  "@context": "https://schema.org",\n'
-        + '  "@type": "Organization",\n'
-        + f'  "name": "{SITE_NAME}",\n'
-        + '  "url": "https://hummelllc.com/",\n'
-        + f'  "logo": "https://hummelllc.com/assets/logo.png",\n'
-        + f'  "email": "{email}",\n'
-        + f'  "description": "{desc}"\n'
-        + "}\n"
-        + "</script>"
+        + "\n".join("  " + line for line in doctrine_nap.render().splitlines())
+        + "\n</script>"
     )
 
 
@@ -146,7 +154,12 @@ def main():
     else:
         print("  already current — no change")
     print(f"  share card: summary_large_image + {OG_IMAGE_W}x{OG_IMAGE_H} og image on {len(PAGES)} pages")
-    print(f"  structured data: Organization JSON-LD on {HOME}")
+    problems, _ = doctrine_nap.validate_html(read(HOME))
+    if problems:
+        sys.exit(f"  structured data: {HOME} does not match nap-doctrine rev 3:\n    - " +
+                 "\n    - ".join(problems))
+    print(f"  structured data: {doctrine_nap.NODE['@type']} node on {HOME} — "
+          f"{len(doctrine_nap.TOP_KEYS)} keys, all values from nap-doctrine §5")
 
 
 if __name__ == "__main__":

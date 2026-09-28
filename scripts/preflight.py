@@ -311,19 +311,13 @@ def check_social():
                  f"run python3 scripts/set-social-meta.py")
         if 'property="og:site_name"' not in text:
             fail(f"{page}: no og:site_name — run python3 scripts/set-social-meta.py")
-    m = re.search(r'<script type="application/ld\+json">(.*?)</script>', read("index.html"), re.S)
-    if m is None:
-        fail("index.html: no Organization JSON-LD — run python3 scripts/set-social-meta.py")
-    else:
-        try:
-            data = json.loads(m.group(1))
-        except ValueError as e:
-            fail(f"index.html: JSON-LD does not parse ({e}) — structured data is inert to search engines")
-        else:
-            if data.get("@type") != "Organization" or not data.get("url"):
-                fail("index.html: JSON-LD is not an Organization node with a url")
+    problems, _ = doctrine_nap.validate_html(read("index.html"))
+    for p in problems:
+        fail(f"index.html: structured data does not match nap-doctrine rev 3 — {p} "
+             f"(run: python3 scripts/set-social-meta.py; values live in scripts/doctrine_nap.py)")
     if len(FAILS) == before:
-        ok("share cards + Organization JSON-LD present on all pages")
+        ok("share cards on all pages + doctrine JSON-LD on Home "
+           f"({doctrine_nap.NODE['@type']}, {len(doctrine_nap.TOP_KEYS)} keys, all values from nap-doctrine §5)")
 
 
 # ---------------------------------------------------------------- live + dns
