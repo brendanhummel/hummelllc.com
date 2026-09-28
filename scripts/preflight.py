@@ -16,7 +16,6 @@ Stdlib only — nothing to install.
 """
 
 import argparse
-import json
 import os
 import re
 import socket
@@ -24,6 +23,8 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+
+import doctrine_nap
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -344,8 +345,9 @@ def check_live(base):
         if slug == "":
             if 'name="twitter:card"' not in body:
                 fail("live: home page served without a twitter:card — share cards are missing in production")
-            if 'application/ld+json' not in body:
-                fail("live: home page served without Organization JSON-LD")
+            problems, _ = doctrine_nap.validate_html(body)
+            for p in problems:
+                fail(f"live: home page JSON-LD does not match nap-doctrine rev 3 — {p}")
     status, body = fetch(base + "definitely-not-a-page-xyz/")
     if status != 404:
         fail(f"live: unknown route returned {status}, expected 404")
