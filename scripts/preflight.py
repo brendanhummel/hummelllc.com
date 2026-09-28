@@ -226,7 +226,10 @@ def check_launch_config():
     else:
         ok(f"contact transport configured ({'endpoint' if endpoint and endpoint.group(1) else 'mailto: ' + email.group(1)})")
     if not (sched and sched.group(1)):
-        warn("LAUNCH GATE — scheduleUrl empty: 'Schedule a 30-minute intro call' scrolls to the form instead of booking")
+        warn("LAUNCH GATE — scheduleUrl empty: 'Schedule a 30-minute intro call' scrolls to the form instead of booking "
+             "(DELIBERATE — founder deferred the booking link 2026-09-28: Cal.com chosen, URL 'not created yet'. "
+             "Wiring is one command when the URL exists: python3 scripts/set-contact.py --schedule <public URL>. "
+             "See LAUNCH-RUNBOOK.md §4.1.)")
 
     missing = []
     for page in PAGES:

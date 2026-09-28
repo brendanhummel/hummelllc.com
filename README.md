@@ -54,7 +54,7 @@ All wiring is one config object at the top of `assets/js/contact.js` (`window.HU
 - `email`: the address the form opens in the visitor's mail app — set it **only once that mailbox is confirmed to accept mail** (send one test, confirm no bounce). Until `endpoint` or `email` is set, submitting shows a short pre-launch note (no dead inbox, no broken mailto).
 - `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form and the "A calendar link lands here before launch" note stays. Once set, the button goes straight to the calendar and that note is hidden automatically — left visible it would contradict the working link sitting right under it.
 
-**Launch-window decisions (founder, 2026-09-27):** transport stays **`mailto:`** (not a form provider) for launch; the intro-call button becomes a **Cal.com** booking link — the public URL is still owed, so the button keeps scrolling to the form until it arrives. Revisit the transport after launch once analytics show real traffic.
+**Launch-window decisions (founder, 2026-09-27; booking link deferred 2026-09-28):** transport stays **`mailto:`** (not a form provider) for launch; the intro-call button becomes a **Cal.com** booking link, but the founder deferred it — "not created yet, ask me again after launch" — so for launch the button keeps scrolling to the tested form. That is a recorded choice, not an open question. Revisit the transport, and re-raise the booking link, after launch once analytics show real traffic (tracked as HUM-13).
 
 **Set these with the helper, not by hand:**
 
