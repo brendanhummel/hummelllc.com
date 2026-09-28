@@ -258,6 +258,48 @@ def check_launch_config():
     ok("legal-name guardrail checked")
 
 
+# ---------------------------------------------------------------- assets / payload
+# The header logo is the only raster on a page and the only real payload risk:
+# a display-sized variant must stay tiny, and no page may silently go back to
+# shipping the 1083x1020 brand master (272 KB) at 46 px tall.
+LOGO_PAYLOAD_BUDGET = 24 * 1024
+LOGO_IMG_RE = re.compile(r'<img src="([^"]*assets/logo[^"]*)"[^>]*?alt="Hummel LLC"')
+LOGO_SRCSET_RE = re.compile(r'srcset="([^"]+)"')
+
+
+def check_assets():
+    seen = {}
+    before = len(FAILS)
+    for page in ALL_HTML:
+        text = read(page)
+        m = LOGO_IMG_RE.search(text)
+        if not m:
+            fail(f"{page}: no header logo <img> found (alt=\"Hummel LLC\")")
+            continue
+        src = m.group(1)
+        refs = [src.split()[0]]
+        setm = LOGO_SRCSET_RE.search(m.group(0))
+        if not setm:
+            fail(f"{page}: header logo has no srcset — a large-screen browser will get the "
+                 f"full-size master; run python3 scripts/optimize-logo.py")
+        else:
+            refs += [part.strip().split()[0] for part in setm.group(1).split(",") if part.strip()]
+        base = ROOT if page == ERROR_PAGE else os.path.dirname(os.path.join(ROOT, page))
+        for ref in refs:
+            target = os.path.normpath(os.path.join(base, ref.lstrip("/")))
+            if not os.path.exists(target):
+                fail(f"{page}: logo asset '{ref}' has no file on disk — run scripts/optimize-logo.py")
+                continue
+            size = os.path.getsize(target)
+            seen[ref] = size
+            if size > LOGO_PAYLOAD_BUDGET:
+                fail(f"{page}: logo asset '{ref}' is {size:,} bytes (> {LOGO_PAYLOAD_BUDGET:,} budget) "
+                     f"— the header renders it at 46 px tall; run scripts/optimize-logo.py")
+    if seen and len(FAILS) == before:
+        worst = max(seen.values())
+        ok(f"logo payload within budget ({len(seen)} variants, worst {worst:,} bytes per page view)")
+
+
 # ---------------------------------------------------------------- live + dns
 def fetch(url, method="GET"):
     req = urllib.request.Request(url, method=method, headers={"User-Agent": "hummelllc-preflight"})
@@ -284,6 +326,21 @@ def check_live(base):
         fail(f"live: unknown route returned {status}, expected 404")
     elif "404" not in body and "isn" not in body:
         warn("live: 404 status returned but custom not-found page text not detected")
+    # payload: the served logo must be the display-sized variant, not the master
+    payload_fail = len(FAILS)
+    for ref in ("assets/logo-46.png", "assets/logo-93.png"):
+        req = urllib.request.Request(base + ref, headers={"User-Agent": "hummelllc-preflight"})
+        try:
+            with urllib.request.urlopen(req, timeout=25) as r:
+                size = len(r.read())
+                if r.status != 200:
+                    fail(f"live: {base}{ref} -> {r.status}")
+                elif size > LOGO_PAYLOAD_BUDGET:
+                    fail(f"live: {base}{ref} is {size:,} bytes (> budget)")
+        except Exception as e:  # noqa: BLE001
+            fail(f"live: {base}{ref} not fetchable ({type(e).__name__}: {e}) — run scripts/optimize-logo.py")
+    if len(FAILS) == payload_fail:
+        ok("live logo variants served at display size")
     ok(f"live routes fetched from {base}")
 
 
@@ -343,6 +400,7 @@ def main():
     check_guardrails()
     check_no_secrets()
     check_structure()
+    check_assets()
     check_launch_config()
     if args.live:
         check_live(args.live)
