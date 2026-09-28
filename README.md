@@ -54,6 +54,8 @@ All wiring is one config object at the top of `assets/js/contact.js` (`window.HU
 - `email`: the address the form opens in the visitor's mail app — set it **only once that mailbox is confirmed to accept mail** (send one test, confirm no bounce). Until `endpoint` or `email` is set, submitting shows a short pre-launch note (no dead inbox, no broken mailto).
 - `scheduleUrl`: calendar link for the 30-minute intro call. While empty, the "Schedule a 30-minute intro call" button scrolls to the form and the "A calendar link lands here before launch" note stays. Once set, the button goes straight to the calendar and that note is hidden automatically — left visible it would contradict the working link sitting right under it.
 
+**Launch-window decisions (founder, 2026-09-27):** transport stays **`mailto:`** (not a form provider) for launch; the intro-call button becomes a **Cal.com** booking link — the public URL is still owed, so the button keeps scrolling to the form until it arrives. Revisit the transport after launch once analytics show real traffic.
+
 **Set these with the helper, not by hand:**
 
 ```bash
@@ -97,9 +99,9 @@ The script is idempotent (re-running reports "already current"), replaces the pl
 
 ## DNS / launch facts
 
-- Registrar + hosting account: GoDaddy (brief rev 4 — both confirmed; nameservers ns23/ns24.domaincontrol.com, parked as of 2026-09-25).
-- Email MX today: Zoho (mx1–3.zoho.com) — mailbox existence unconfirmed.
-- **Launch host: GitHub Pages (LOCKED by founder — stack interaction 2026-09-25).** Staging URL becomes the production host; DNS cutover = add a `CNAME` from `www` to `brendanhummel.github.io` at GoDaddy (or use GoDaddy's web-forwarding to `www`), plus enable the custom domain in the Pages settings (Settings → Pages → Custom domain). Preserve existing MX/TXT records when editing DNS (brief §7).
+- Registrar + hosting account: GoDaddy (brief rev 4 — both confirmed; nameservers ns23/ns24.domaincontrol.com, parked as of 2026-09-25). The GoDaddy *hosting plan* stays unused — the site runs on GitHub Pages.
+- Email MX today: Zoho (mx1–3.zoho.com) — `hello@hummelllc.com` **live and wired 2026-09-25** (mailbox created, no bounce on re-test; the form uses it).
+- **Launch host: GitHub Pages — LOCKED by founder 2026-09-25, re-confirmed 2026-09-27** (founder decision "keep GitHub Pages"; no Cloudflare Pages migration, no API token needed). Staging URL becomes the production host; DNS cutover = add a `CNAME` from `www` to `brendanhummel.github.io` at GoDaddy (or use GoDaddy's web-forwarding to `www`), plus enable the custom domain in the Pages settings (Settings → Pages → Custom domain). Preserve existing MX/TXT records when editing DNS (brief §7).
 - Full runbook lives in HUM-5 issue comments.
 
 ## Preflight / launch gate
@@ -118,6 +120,6 @@ Exit code 0 = no FAIL. It checks: the site-copy §2 banned-word list (24/7 and a
 2. **Cloudflare Web Analytics beacon** live on all 6 pages (no `<TOKEN>` placeholder left).
 3. **DNS** (`--dns`): apex A records at GitHub Pages, `www` CNAME at `brendanhummel.github.io`, and MX/TXT/SPF still intact (brief §7 — the Zoho mail must survive the web cutover). Also confirms no CAA record blocks the cert issuer.
 
-WARNs (scheduling link, parked DNS, the `© 2026 Hummel LLC` footer line) need a human decision, not a code fix — see the runbook for owner and severity.
+WARNs (Cal.com booking URL still owed by the founder, parked DNS, the `© 2026 Hummel LLC` footer line) need a human decision, not a code fix — see the runbook for owner and severity.
 
 > `404.html` keeps **root-absolute** refs on purpose (it is served at arbitrary depths in production). The staging URL lives under `/hummelllc.com/`, where those refs 404, so the page carries a small inline `<style>` fallback to stay readable there. Do not "fix" it to relative refs — they cannot work at arbitrary depth.

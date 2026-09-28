@@ -1,9 +1,9 @@
 # Launch runbook — hummelllc.com
 
-Key: `launch-runbook` · Owner: Website Engineer (HUM-5) · Written 2026-09-25
-Build status: **complete and verified live on staging.** Both founder-input gates are now **CLOSED** (Gate 1 contact delivery 2026-09-25; Gate 2 analytics 2026-09-25). What remains is the DNS cutover, which is a scheduled launch step (days 26–30), not an engineering gap.
+Key: `launch-runbook` · Owner: Website Engineer (HUM-5) · Written 2026-09-25 · Updated 2026-09-27 (launch-window decisions locked)
+Build status: **complete and verified live on staging.** Both founder-input gates are **CLOSED** (Gate 1 contact delivery 2026-09-25; Gate 2 analytics 2026-09-25), and the three launch-window decisions are now **ANSWERED** (founder, 2026-09-27 — §0.1). What remains is the DNS cutover, a scheduled launch step (days 26–30) tracked as HUM-11, not an engineering gap.
 
-- Staging (verified today, commit `113d3c0`): https://brendanhummel.github.io/hummelllc.com/
+- Staging (verified 2026-09-27, `main` @ `9b3c9c1`): https://brendanhummel.github.io/hummelllc.com/
 - Repo: `brendanhummel/hummelllc.com` (public, branch-deploy from `main` — push = publish)
 - Production target: `https://hummelllc.com/`
 
@@ -22,8 +22,18 @@ Build status: **complete and verified live on staging.** Both founder-input gate
 | **Gate 1 — contact delivery** | **CLOSED 2026-09-25.** Founder created `hello@hummelllc.com` in Zoho and asked for a re-test; the re-test passed (two independent sends 17:08 EDT, no bounce after 9+ minutes — the *same* test had bounced in ~2 s twice at 16:38/16:42 while the mailbox was missing). `email: "hello@hummelllc.com"` is wired and live. See §1. |
 | **Gate 2 — analytics token** | **CLOSED 2026-09-25.** Founder supplied the Cloudflare Web Analytics JS snippet containing the **public site token** (`382b5c…288d`). Wired into all 6 pages with `python3 scripts/set-analytics.py --snippet '…'`; `preflight.py` now reports "analytics beacon live on all pages". No API token was ever needed. See §2. |
 | Copyright line (`© 2026 Hummel LLC`) | **RESOLVED 2026-09-25 — founder chose KEEP**, as approved copy (trade-name usage; LLC not filed). Remains a preflight WARN so it re-surfaces at LLC formation. |
-| Scheduling link (`scheduleUrl`) | **OPEN — founder input.** Last engineering WARN that is mine; one command to close (§4.1). Wiring hardened 2026-09-25 so setting the URL also retires the now-false "A calendar link lands here before launch" note. Not a launch blocker. |
-| DNS cutover | **Not started — waiting on founder GoDaddy access (the only blocker).** Prepared 2026-09-25: exact record change and rollback in §3, plus a one-command production verifier `python3 scripts/postcutover.py` (proven to fail correctly pre-cutover: 12 fail, catches the parking page). |
+| Scheduling link (`scheduleUrl`) | **DECIDED 2026-09-27 — Cal.com free plan** (founder, §0.1). **URL still owed by the founder** — the one remaining input on this issue. One command to wire (§4.1). Wiring hardened 2026-09-25 so setting the URL also retires the now-false "A calendar link lands here before launch" note. Not a launch blocker. |
+| DNS cutover | **Not started — waiting on founder GoDaddy access (the only blocker).** Prepared 2026-09-25: exact record change and rollback in §3, plus a one-command production verifier `python3 scripts/postcutover.py` (proven to fail correctly pre-cutover: 12 fail, catches the parking page). Now tracked as **HUM-11**. |
+
+### 0.1 Launch-window decisions — ANSWERED (founder, 2026-09-27)
+
+Card `979231b4-d260-4626-84f6-45a5f491b7df` ("Three launch-window decisions before cutover") was answered on 2026-09-27:
+
+| Decision | Answer | What it changes in the build |
+|---|---|---|
+| Intro-call booking link | **Cal.com free plan** (`cal_com`) | Nothing yet — the public booking URL has not been supplied. Asked for again in one single-question card (the only ask open on HUM-5). Wiring is verified one-command: see §4.1. |
+| Launch hosting | **Keep GitHub Pages** (`keep_gh_pages`) | No change — staging URL becomes production at cutover (§3). The GoDaddy hosting plan stays unused; no migration, no extra credential. Founder is to revoke any Cloudflare API token created for this work (§2). |
+| Engage form transport | **Keep `mailto:`** (`keep_mailto`) | No change — `hello@hummelllc.com` (Gate 1, §1) stays. Accepted trade-off, recorded in §4.2: a visitor with no configured mail client cannot send; revisit after launch when analytics show real traffic. |
 
 ---
 
@@ -118,7 +128,7 @@ Verification after wiring: `python3 scripts/preflight.py --live <url>` flips Gat
 
 ## 3. DNS cutover (the launch step — days 26–30)
 
-**Launch host: GitHub Pages (locked).** Registrar + DNS: GoDaddy (`ns23/ns24.domaincontrol.com`). No nameserver move, no registrar change.
+**Launch host: GitHub Pages — confirmed again by the founder 2026-09-27** (`keep_gh_pages`: no migration, no Cloudflare credential). Registrar + DNS: GoDaddy (`ns23/ns24.domaincontrol.com`). No nameserver move, no registrar change.
 
 Verified DNS state today (2026-09-25):
 
@@ -160,15 +170,16 @@ Owner: founder (GoDaddy access — I have no registrar credentials and will not 
 
 ## 4. Open WARN items (not launch blockers, need a human call)
 
-1. **Scheduling link** — `scheduleUrl` empty, so "Schedule a 30-minute intro call" scrolls to the form instead of booking. This is the **last engineering WARN that is mine**, and it is a founder input, not a build gap. Give me a calendar URL (Cal.com / Zoho Bookings / Google Appointment Schedule) and it is one command:
+1. **Scheduling link** — **DECIDED 2026-09-27: Cal.com free plan** (founder, §0.1). The **public booking URL is the one input still owed**; everything on my side is ready and re-verified. Give me the link (`https://cal.com/…`) and it is one command:
    ```bash
    python3 scripts/set-contact.py --schedule "https://…"   # then commit + push
    ```
-   Verified 2026-09-25: the command writes exactly one line of `assets/js/contact.js` and `preflight.py` flips from `WARN LAUNCH GATE — scheduleUrl empty` to **6 ok / 1 warn / 0 fail**. The same pass fixed a real defect in what was previously called a "one-line change": setting the URL used to leave the Engage note ("A calendar link lands here before launch; until then the button takes you to the form below") visible *above* a working link. `contact.js` now hides that note whenever `scheduleUrl` is set, and `scripts/test-contact-modes.js` asserts both states (13/13 pass).
-   Asked of the founder 2026-09-25 as an `ask_user_questions` on HUM-5 (options: Cal.com / Zoho Bookings / Google Appointment Schedule / keep scroll-to-form). Owner: founder. Not a launch blocker — every inquiry path already works via the form.
+   Verified 2026-09-27 on a scratch clone of `main` with a placeholder Cal.com URL: the command writes exactly one line of `assets/js/contact.js`, reads it back off disk, and `preflight.py` flips from `WARN LAUNCH GATE — scheduleUrl empty` to **LAUNCH-READY — 6 ok / 1 warn / 0 fail**; `node scripts/test-contact-modes.js` stays green (incl. the two assertions on the stale-note branch). The same pass on 2026-09-25 fixed a real defect in what was previously called a "one-line change": setting the URL used to leave the Engage note ("A calendar link lands here before launch; until then the button takes you to the form below") visible *above* a working link. `contact.js` now hides that note whenever `scheduleUrl` is set.
+   Asked again 2026-09-27 as a single-question `ask_user_questions` on HUM-5 (the previous card's answer named Cal.com but carried no URL, and I will not invent or guess a booking address). Owner: founder. Not a launch blocker — every inquiry path already works via the form.
 2. **Footer `© 2026 Hummel LLC`** — **RESOLVED 2026-09-25: founder reviewed and chose KEEP.** It is verbatim approved copy (`site-copy` §3.7), trade-name usage is allowed, and the LLC is not filed. I do not invent or rewrite legal text, so it ships as approved. The preflight WARN was kept deliberately (re-worded to record the decision) so the line re-surfaces when the LLC is actually formed — at that point the notice becomes accurate and the WARN can be retired.
-3. **Hosting account is GoDaddy, launch host is GitHub Pages** — the GoDaddy hosting plan sits unused (brief rev 4 §7 says hosting account = GoDaddy; the founder separately locked GitHub Pages in the stack decision). I recommend staying on Pages: free, repo-backed, no build step, and the current staging URL simply becomes production. Moving to GoDaddy hosting would mean a rebuild/redeploy path with no launch benefit. Flagging for visibility — Chief of staff's call if the founder wants the paid plan used.
-4. **`hello@hummelllc.com`** — **RESOLVED 2026-09-25:** it bounced twice in ~2 s (`550 5.1.1` from `mx.zoho.com`) at 16:38/16:42 EDT, the founder then created the mailbox, and a re-test at 17:08 EDT (two independent external senders) produced no bounce after 9+ minutes. `email: "hello@hummelllc.com"` is wired and live. See §1.
+3. **Hosting account is GoDaddy, launch host is GitHub Pages** — **ANSWERED 2026-09-27: stay on GitHub Pages** (`keep_gh_pages`, §0.1). The GoDaddy hosting plan sits unused; no rebuild, no redeploy path, no extra credential. If the founder later wants the paid plan used, that is a planned migration, not a launch change.
+4. **Form transport stays `mailto:`** — **DECIDED 2026-09-27: keep `mailto:` for launch** (`keep_mailto`, §0.1). Accepted trade-off on the record: the visitor's own mail client does the sending, so an inquiry is lost if that visitor has no configured mail client, and there is no in-page record. Revisit after launch once analytics show real traffic — a provider installs with `python3 scripts/set-contact.py --endpoint <url>` (no rebuild).
+5. **`hello@hummelllc.com`** — **RESOLVED 2026-09-25:** it bounced twice in ~2 s (`550 5.1.1` from `mx.zoho.com`) at 16:38/16:42 EDT, the founder then created the mailbox, and a re-test at 17:08 EDT (two independent external senders) produced no bounce after 9+ minutes. `email: "hello@hummelllc.com"` is wired and live. See §1.
 
 ---
 
