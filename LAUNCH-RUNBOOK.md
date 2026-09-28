@@ -23,7 +23,7 @@ Build status: **complete and verified live on staging.** Both founder-input gate
 | **Gate 2 — analytics token** | **CLOSED 2026-09-25.** Founder supplied the Cloudflare Web Analytics JS snippet containing the **public site token** (`382b5c…288d`). Wired into all 6 pages with `python3 scripts/set-analytics.py --snippet '…'`; `preflight.py` now reports "analytics beacon live on all pages". No API token was ever needed. See §2. |
 | Copyright line (`© 2026 Hummel LLC`) | **RESOLVED 2026-09-25 — founder chose KEEP**, as approved copy (trade-name usage; LLC not filed). Remains a preflight WARN so it re-surfaces at LLC formation. |
 | Scheduling link (`scheduleUrl`) | **DECIDED 2026-09-27 — Cal.com free plan** (founder, §0.1). **URL still owed by the founder** — the one remaining input on this issue. One command to wire (§4.1). Wiring hardened 2026-09-25 so setting the URL also retires the now-false "A calendar link lands here before launch" note. Not a launch blocker. |
-| DNS cutover | **In progress — apex DONE 2026-09-27** (`@` A now the four GitHub IPs; `https://hummelllc.com/` serves the real site, 200, valid Let's Encrypt cert; custom domain set). **Remaining: the `www` CNAME Value → `brendanhummel.github.io`** (founder, GoDaddy — the only step needing registrar access; field-level instructions in §3). Then I force the cert to cover www and tick Enforce HTTPS. Tracked as **HUM-11**. |
+| DNS cutover | ✅ **CUTOVER COMPLETE 2026-09-27** — both records landed (apex A → four GitHub IPs, `www` CNAME → `brendanhummel.github.io`), custom domain set, Enforce HTTPS on. **`https://hummelllc.com/` serves the real site: 200, valid Let's Encrypt cert, all 6 routes, beacon, mail intact.** One residual, GitHub-side: the Pages certificate covers the apex only, so `https://www.hummelllc.com/` fails hostname verification (the `http://www` path 301s to the secure canonical correctly). Named next action: founder opens Settings → Pages once in the browser (see §3). Tracked as **HUM-11**. |
 
 ### 0.1 Launch-window decisions — ANSWERED (founder, 2026-09-27)
 
@@ -135,14 +135,25 @@ Verification after wiring: `python3 scripts/preflight.py --live <url>` flips Gat
 | Record | Before (2026-09-25) | Now |
 |---|---|---|
 | `@` A | `3.33.130.190`, `15.197.148.33` (GoDaddy parking) | ✅ **DONE** — `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` |
-| `www` | CNAME → `hummelllc.com` (follows the apex) | ⚠️ **STILL THE PARKING VALUE** — CNAME → `hummelllc.com`; must become `brendanhummel.github.io` |
+| `www` | CNAME → `hummelllc.com` (follows the apex) | ✅ **DONE 2026-09-27** — CNAME → `brendanhummel.github.io` (founder, GoDaddy; verified at the authoritative nameserver and via the system resolver) |
 | MX | Zoho mx/mx2/mx3 | **UNCHANGED — do not touch** (still 3 records) |
 | TXT | SPF + Zoho includes | **UNCHANGED — do not touch** (SPF intact) |
 | CAA | none present | leave absent — cert issuance unrestricted (checked: nothing blocks the Pages cert issuer) |
 
-**Live state:** `https://hummelllc.com/` → **200 with a valid Let's Encrypt certificate**, all 6 routes 200, beacon present, canonical tags correct. `http://www.hummelllc.com/` → 301 → `http://hummelllc.com/` (works). `https://www.hummelllc.com/` → **cert error** — GitHub issued the certificate for `hummelllc.com` only, because www still points at the apex rather than at `brendanhummel.github.io`. **Enforce HTTPS is deliberately OFF** until www is fixed: enabling it now would 301 www to a hostname with no certificate.
+**Live state (verified 2026-09-27 21:1x EDT — cutover complete):**
 
-GitHub Pages (verified via API): `cname = hummelllc.com`, `https_certificate.state = approved`, `domains = [hummelllc.com]`, and the repo now carries a `CNAME` file containing `hummelllc.com`.
+- `https://hummelllc.com/` → **200, valid Let's Encrypt certificate** (SAN `hummelllc.com`); all 6 routes 200 with the analytics beacon; canonical tags correct.
+- `http://hummelllc.com/` → **301 → `https://hummelllc.com/`** (Enforce HTTPS is ON).
+- `http://www.hummelllc.com/` → **301 → `https://hummelllc.com/`** (single hop, straight to the secure canonical).
+- `https://www.hummelllc.com/` → ⚠️ **still a certificate error.** GitHub's Pages certificate covers `hummelllc.com` only, so a client that goes straight to HTTPS on the www hostname fails hostname verification. Everything else about www is correct: `www` CNAME → `brendanhummel.github.io`, and it redirects properly over HTTP.
+
+**The www SAN gap is a GitHub Pages behaviour, not a misconfiguration.** Confirmed on this domain and independently reported in GitHub community discussion [#206519](https://github.com/orgs/community/discussions/206519) (same shape: four apex A records, `www CNAME <user>.github.io`, cert `domains: ["apex"]` only). Tried and **ineffective** on 2026-09-27: re-saving the same custom domain; removing and re-adding it (the identical apex-only cert was matched, same expiry); a Pages rebuild; `GET /repos/…/pages/health` (202, DNS check accepted). Pages health and DNS are all correct — GitHub simply matched the existing apex-only certificate instead of ordering a new one.
+
+**Recovery step that worked for that identical case:** open **Settings → Pages in the browser once, read-only** (no Save, no Remove, no field change) and let the page's own *DNS Check* finish. It went `DNS Check in Progress` → `DNS check successful`, the certificate API moved to `authorized` for **both** hostnames and then `approved` with both SANs, and `https://www.…` began serving with a valid certificate. **This is the named next action for the founder** (needs his authenticated browser session; the API path is exhausted).
+
+**If that does not take**, in order of preference: (1) leave it — the launch is unaffected for anyone who types `hummelllc.com` or follows an `http://www` link, both of which land on the secure canonical in one hop; (2) front the domain with Cloudflare in proxied mode (fixes apex + www TLS in one move, adds CDN/caching) — but that is a nameserver move and a new account, so it contradicts the `keep_gh_pages` decision and needs an explicit founder call; (3) open a GitHub support ticket referencing discussion #206519.
+
+GitHub Pages (verified via API): `cname = hummelllc.com`, `https_enforced = true`, `https_certificate.state = approved`, `domains = [hummelllc.com]`, `expires_at = 2026-12-26`; the repo carries a `CNAME` file containing `hummelllc.com` (committed by GitHub, `55ef060`).
 
 **Order matters.** DNS first, custom domain second — GitHub only provisions the TLS certificate once the domain already resolves to it.
 
@@ -159,7 +170,7 @@ GitHub Pages (verified via API): `cname = hummelllc.com`, `https_certificate.sta
 
    **Edit the existing row, do not add a second one.** The zone already contains a `www` CNAME whose Value is `hummelllc.com` (GoDaddy's parking default, "follow the apex") — it will be listed with a Data/Value of `@` or `hummelllc.com`. Two CNAMEs on the same name is an invalid zone and will break www. Use the pencil on that row. **Do not touch the MX or TXT rows** — mail depends on them.
 
-2. GitHub → repo `hummelllc.com` → **Settings → Pages → Custom domain** → enter `hummelllc.com` → Save. **DONE 2026-09-27** (via the Pages API; GitHub committed a `CNAME` file to the repo). **Ticking Enforce HTTPS is only safe once the certificate covers *both* `hummelllc.com` and `www.hummelllc.com`** — check `https_certificate.domains` in `GET /repos/brendanhummel/hummelllc.com/pages`, or just run `postcutover.py`. Enabling it while the cert is apex-only 301s www to a hostname with no valid certificate.
+2. GitHub → repo `hummelllc.com` → **Settings → Pages → Custom domain** → enter `hummelllc.com` → Save. **DONE 2026-09-27** (via the Pages API; GitHub committed a `CNAME` file to the repo). **Enforce HTTPS: ON** (2026-09-27) — `http://hummelllc.com/` and `http://www.hummelllc.com/` both 301 to `https://hummelllc.com/`. Enforce HTTPS only ever becomes unsafe if the certificate stops covering a hostname it redirects to, so re-check it with `postcutover.py` after any DNS or Pages-settings change.
 3. Verify: `https://hummelllc.com/` and `https://www.hummelllc.com/` both load with a valid certificate; the old staging URL redirects to the domain; then run the one-command production check:
 
    ```
@@ -172,11 +183,13 @@ GitHub Pages (verified via API): `cname = hummelllc.com`, `https_certificate.sta
 
 4. Post-cutover smoke test: all 6 pages, the form submit, one email to `hello@`, and `curl -I https://hummelllc.com/what-we-do/` for a 200 — this last one is automated in `scripts/postcutover.py`.
 
+**Gate fix 2026-09-27 — the engage check was reading the wrong place.** `check_engage_form()` looked for `hello@hummelllc.com` in the `/engage/` **HTML**, but the address lives in `assets/js/contact.js` (the page loads it; contact.js owns the value so it is set in exactly one place). On correct content that check reported `FAIL engage form: transport address … missing (Gate 1 regression)` — a false alarm on a healthy site. It now follows the page's own `<script src>`, fetches the JS the browser actually runs, and asserts the `email:`/`endpoint:` values in it — strictly stronger than grepping the HTML, since it validates the live transport rather than a copy of the string. Regression-proofed by `scripts/test-engage-gate.py` (7 cases: correct content, wrong address, empty transport, endpoint-only, missing script tag, missing form markup, unfetchable JS — all 7 behave correctly; run `python3 scripts/test-engage-gate.py`). Post-cutover tally after the fix: **17 ok, 0 warn, 2 fail** — both fails the single www-certificate item above. `preflight.py --live https://hummelllc.com/ --dns` → **LAUNCH-READY, 12 ok, 2 warn, 0 fail**.
+
 **Contingency — GitHub domain verification.** If GitHub shows the custom domain as *unverified* (Settings → Pages, or a banner), it will hand you a `_github-pages-challenge-brendanhummel` **TXT** record to add at GoDaddy. Add it alongside the existing TXT records; do not replace them. It does not affect mail. This is the only DNS addition beyond the table above.
 
 **Rollback:** revert step 1 (restore the two GoDaddy parking A records, drop the `www` CNAME). Email is untouched throughout, so rollback cannot break mail. The staging URL keeps serving either way.
 
-Owner: founder (GoDaddy access — I have no registrar credentials and will not ask for them in chat). I drive the GitHub-side setting and run the verification. Founder access is needed only for step 1.
+Owner: founder (GoDaddy access — I have no registrar credentials and will not ask for them in chat). I drive the GitHub-side setting and run the verification. Founder access was needed for step 1 (**done 2026-09-27**); the one remaining founder action is the read-only Settings → Pages visit described above.
 
 **Cutover readiness (verified 2026-09-25 17:5x EDT):** the GitHub-side step is credential-ready — `gh auth status` reports the `brendanhummel` account logged in with `repo` scope, so step 2 is a settings change I can make the moment step 1 resolves; no new secret and nothing to ask the founder for. Steps 3–4 (verification and smoke test) are already scripted: `python3 scripts/postcutover.py` (which hands off to `preflight.py --live https://hummelllc.com/ --dns`).
 

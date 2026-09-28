@@ -25,6 +25,7 @@ import ssl
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 DOMAIN = "hummelllc.com"
@@ -237,11 +238,34 @@ def check_engage_form():
         return
     if 'id="contact-form"' not in body:
         fail("engage form: contact form markup missing on /engage/")
-    elif "hello@hummelllc.com" not in body:
-        fail("engage form: transport address hello@hummelllc.com missing (Gate 1 regression)")
+        return
+    # The transport address lives in the JS the page loads, not in the HTML —
+    # contact.js owns it so the address is set in exactly one place. Resolve it
+    # the way a browser does: follow the page's own <script src>. (Checking the
+    # HTML for the address was a stale check: it FAILed on correct content.)
+    m = re.search(r'<script[^>]+src="([^"]*contact\.js)"', body)
+    if not m:
+        fail("engage form: /engage/ does not load contact.js — the form would submit nowhere")
+        return
+    src = m.group(1)
+    js_url = src if src.startswith("http") else urllib.parse.urljoin(CANON + "engage/", src)
+    s2, js, _, err2 = fetch(js_url)
+    if err2 or s2 != 200:
+        fail(f"engage form: contact transport JS not fetchable ({js_url}: {err2 or s2})")
+        return
+    em = re.search(r'email:\s*"([^"]*)"', js)
+    ep = re.search(r'endpoint:\s*"([^"]*)"', js)
+    email = em.group(1) if em else ""
+    endpoint = ep.group(1) if ep else ""
+    if "hello@hummelllc.com" in email:
+        ok(f"engage form: present, wired to hello@hummelllc.com in {js_url} (submit is a "
+           "mail-client action — requires a real human send to close)")
+    elif email or endpoint:
+        fail(f"engage form: transport is {email or endpoint}, expected hello@hummelllc.com "
+             "(Gate 1 regression)")
     else:
-        ok("engage form: present, wired to hello@hummelllc.com (submit is a mail-client "
-           "action — requires a real human send to close)")
+        fail("engage form: transport address hello@hummelllc.com missing (Gate 1 regression) — "
+             f"{js_url} has neither email nor endpoint set")
 
 
 def check_preflight():
