@@ -18,6 +18,9 @@ Cases:
   4 fixture-name      wrong name form 'HummelLLC' only, no exact 'Hummel LLC'
                                                                      -> FAIL (the name check fires)
   5 fixture-negation  the site's own approved negation, verbatim     -> PASS (no false positive)
+  6 site anchor       the node reverted to the pre-HUM-12 'Organization'
+                                                                     -> FAIL (guard bites)
+  7 site anchor       the English word "organization" in body prose  -> PASS (guard is the JSON fragment, not the word)
 
 Note on case 4: it is a separate fixture on purpose. The rev 1 document claimed
 case 3 also proved the name check, but that fixture's body contains "Hummel LLC,
@@ -108,6 +111,40 @@ def main() -> int:
         # 5. approved negation is NOT a false positive
         fails = run("fixture-negation")
         checks.append(("fixture-negation -> PASS (approved copy not flagged)", not fails, f"failures={fails}"))
+
+        # 6. the site anchor's own expect block catches the pre-HUM-12 regression:
+        #    a page serving the older Organization node. Fires on the JSON fragment,
+        #    not on the English word -- "your organization's IT" must not trip it.
+        site = next(p for p in manifest["profiles"] if p["key"] == "site")
+        (tmpdir / "broken-org.html").write_text(
+            '<html><body>Hummel LLC https://hummelllc.com/ '
+            '<script src="https://static.cloudflareinsights.com/beacon.min.js"></script>'
+            '<script type="application/ld+json">{"@context": "https://schema.org", '
+            '"@type": "Organization"}</script></body></html>',
+            encoding="utf-8",
+        )
+        (tmpdir / "prose-organization.html").write_text(
+            '<html><body>Hummel LLC https://hummelllc.com/ '
+            '<p>Senior IT leadership for your organization, remote-first.</p>'
+            '<script src="https://static.cloudflareinsights.com/beacon.min.js"></script>'
+            '<script type="application/ld+json">{"@context": "https://schema.org", '
+            '"@type": "ProfessionalService"}</script></body></html>',
+            encoding="utf-8",
+        )
+        broken = dict(site, url=str(tmpdir / "broken-org.html"))
+        prose = dict(site, url=str(tmpdir / "prose-organization.html"))
+        b_fails = checker.check_profile(broken, manifest)
+        p_fails = checker.check_profile(prose, manifest)
+        checks.append((
+            "site anchor -> FAIL when the node reverts to Organization",
+            any("Organization" in f for f in b_fails),
+            f"{b_fails}",
+        ))
+        checks.append((
+            "site anchor -> PASS on the word 'organization' in prose",
+            not p_fails,
+            f"{p_fails}",
+        ))
 
     print("test-verify-presence -- fault injection against scripts/verify-presence.py\n")
     bad = 0

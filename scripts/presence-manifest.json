@@ -24,8 +24,14 @@
       "state": "LIVE (cutover verified 2026-09-28)",
       "expect": {
         "status": 200,
-        "must_contain": ["Hummel LLC", "https://hummelllc.com/", "cloudflareinsights.com/beacon.min.js"],
-        "must_not_contain": ["GoDaddy", "/lander"]
+        "must_contain": [
+          "Hummel LLC",
+          "https://hummelllc.com/",
+          "cloudflareinsights.com/beacon.min.js",
+          "application/ld+json",
+          "ProfessionalService"
+        ],
+        "must_not_contain": ["GoDaddy", "/lander", "\"@type\":\\s*\"Organization\""]
       }
     },
     {
