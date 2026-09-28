@@ -140,7 +140,7 @@ Verification after wiring: `python3 scripts/preflight.py --live <url>` flips Gat
 | TXT | SPF + Zoho includes | **UNCHANGED — do not touch** (SPF intact) |
 | CAA | none present | leave absent — cert issuance unrestricted (checked: nothing blocks the Pages cert issuer) |
 
-**Live state (re-verified 2026-09-28 21:20 EDT — production verified, 0 fail):**
+**Live state (re-verified 2026-09-27 21:20 EDT / 2026-09-28 01:20 UTC — production verified, 0 fail):**
 
 - `https://hummelllc.com/` → **200, valid Let's Encrypt certificate** (SAN `hummelllc.com`, `www.hummelllc.com`); all 6 routes 200 with the analytics beacon; canonical tags correct.
 - `https://www.hummelllc.com/` → ✅ **valid certificate, 301 → `https://hummelllc.com/`** (single hop, straight to the secure canonical). No hostname-verification error any more.
@@ -168,6 +168,21 @@ Verification after wiring: `python3 scripts/preflight.py --live <url>` flips Gat
    **Edit the existing row, do not add a second one.** The zone already contains a `www` CNAME whose Value is `hummelllc.com` (GoDaddy's parking default, "follow the apex") — it will be listed with a Data/Value of `@` or `hummelllc.com`. Two CNAMEs on the same name is an invalid zone and will break www. Use the pencil on that row. **Do not touch the MX or TXT rows** — mail depends on them.
 
 2. GitHub → repo `hummelllc.com` → **Settings → Pages → Custom domain** → enter `hummelllc.com` → Save. **DONE 2026-09-27** (via the Pages API; GitHub committed a `CNAME` file to the repo). **Enforce HTTPS: ON** (2026-09-27) — `http://hummelllc.com/` and `http://www.hummelllc.com/` both 301 to `https://hummelllc.com/`. **Certificate: `approved` for both hostnames since 2026-09-28** (see the www SAN note above). Enforce HTTPS only ever becomes unsafe if the certificate stops covering a hostname it redirects to, so re-check it with `postcutover.py` after any DNS or Pages-settings change.
+
+   **Reading the Settings → Pages panel — what is normal, and what (if anything) is yours to do.** The founder asked about exactly this panel on **HUM-11, 2026-09-27 21:18 EDT**, with a screenshot showing the *in-between* state, so here is the decoder. Every row below is something I have observed live on this domain:
+
+   | What the panel says | Means | Action for you |
+   |---|---|---|
+   | `Your site is live at https://hummelllc.com/` | Pages is serving the **custom domain**, not `github.io` — the cutover is real | none |
+   | `Last deployed by brendanhummel … ago` | time of the last `git push` to `main` | none |
+   | `DNS check successful` (green check) | the four apex A records **and** the `www` CNAME match what Pages expects | none |
+   | `TLS certificate is being provisioned. This may take up to 15 minutes` + `n of 3` | GitHub is ordering the Let's Encrypt cert. **Normal transient state.** | none — it finishes on its own |
+   | `Certificate Active … allow up to 30 minutes to 1 hour for it to be globally available` | cert issued; some resolvers/browsers still cache the old one | none; if a browser still warns, restart it |
+   | `Enforce HTTPS` **greyed out / unticked** + `Not yet available… allow 24 hours` | the checkbox stays locked until the cert finishes issuing. **This is not a task for you.** | none — it re-enables already ticked |
+   | `Unverified domain` banner / red `DNS check failed` | the only genuinely actionable case | see the TXT contingency below |
+
+   Observed on this domain: at **21:18 EDT** the panel showed *provisioning + Enforce HTTPS greyed*; within minutes it read `DNS check successful`, and at **21:30 EDT** the API confirmed `https_certificate.state = approved` with **both** SANs and **`https_enforced = true`** — no founder action in between. **If the panel still looks greyed, hard-refresh it (`⌘⇧R`); the API is the authority, not the cached page.** When the panel and the checks disagree, trust `python3 scripts/postcutover.py`.
+
 3. Verify: `https://hummelllc.com/` and `https://www.hummelllc.com/` both load with a valid certificate; the old staging URL redirects to the domain; then run the one-command production check:
 
    ```
