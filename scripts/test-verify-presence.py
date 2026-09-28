@@ -146,6 +146,40 @@ def main() -> int:
             f"{p_fails}",
         ))
 
+    # 8/9. the phone rule added 2026-09-28: when the manifest says a platform
+        # publishes a phone, the value must be the canonical one -- read from the
+        # manifest so the fixture is built from the same single string.
+        phone = manifest["canonical"]["phone"]
+
+        def run_keyed(key: str, publishes_phone: bool) -> list[str]:
+            return checker.check_profile(
+                {
+                    "key": key,
+                    "url": str(tmpdir / f"{key}.html"),
+                    "publishes_phone": publishes_phone,
+                    "expect": {"status": 200, "must_contain": ["Hummel LLC"], "must_not_contain": []},
+                },
+                manifest,
+            )
+
+        (tmpdir / "fixture-phone.html").write_text(
+            FIXTURES["fixture-clean"].replace("hello@hummelllc.com", f"{phone} · hello@hummelllc.com"),
+            encoding="utf-8",
+        )
+        (tmpdir / "fixture-nophone.html").write_text(FIXTURES["fixture-clean"], encoding="utf-8")
+        ok_fails = run_keyed("fixture-phone", True)
+        bad_fails = run_keyed("fixture-nophone", True)
+        checks.append((
+            "profile that publishes a phone -> PASS with the canonical number",
+            not ok_fails,
+            f"failures={ok_fails}",
+        ))
+        checks.append((
+            "profile that publishes a phone -> FAIL when the number is absent",
+            any("canonical phone missing" in f for f in bad_fails),
+            f"{[f for f in bad_fails if 'phone' in f]}",
+        ))
+
     print("test-verify-presence -- fault injection against scripts/verify-presence.py\n")
     bad = 0
     for label, ok, detail in checks:

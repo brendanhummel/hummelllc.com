@@ -5,16 +5,28 @@
     "website": "https://hummelllc.com/",
     "email": "hello@hummelllc.com",
     "location": "Columbia, SC",
-    "source": "nap-doctrine rev 3 section 5"
+    "source": "nap-doctrine rev 5 section 5",
+    "phone": "(803) 816-2204",
+    "phone_e164": "+18038162204"
   },
   "staging_urls": [
     "brendanhummel.github.io",
     "github.io/hummelllc.com"
   ],
   "guardrail_patterns": [
-    "HIPAA", "CJIS", "NIST", "24/7", "always-on", "always on",
-    "\\bcertified\\b", "\\bcertification\\b", "\\bEIN\\b", "\\bInc\\.", "incorporated",
-    "registered in SC", "same-day"
+    "HIPAA",
+    "CJIS",
+    "NIST",
+    "24/7",
+    "always-on",
+    "always on",
+    "\\bcertified\\b",
+    "\\bcertification\\b",
+    "\\bEIN\\b",
+    "\\bInc\\.",
+    "incorporated",
+    "registered in SC",
+    "same-day"
   ],
   "profiles": [
     {
@@ -31,56 +43,101 @@
           "application/ld+json",
           "ProfessionalService"
         ],
-        "must_not_contain": ["GoDaddy", "/lander", "\"@type\":\\s*\"Organization\""]
-      }
+        "must_not_contain": [
+          "GoDaddy",
+          "/lander",
+          "\"@type\":\\s*\"Organization\""
+        ]
+      },
+      "publishes_phone": false
     },
     {
       "key": "gbp",
       "label": "Google Business Profile (service-area, address hidden)",
       "url": "",
       "planned_url": "https://www.google.com/maps/place/… (short name to be recorded at claim)",
-      "state": "not created — blocked on business phone + Google-account choice",
+      "state": "cleared to publish — founder inputs received 2026-09-28 (phone, service area, on-site YES, new Google account); NOT created — account creation + Google verification are owner-only",
       "expect": {
         "status": 200,
-        "must_contain": ["Hummel LLC", "Columbia", "hummelllc.com"],
-        "must_not_contain": ["24/7", "always-on", "HIPAA", "CJIS", "NIST", "\\bInc\\."]
-      }
+        "must_contain": [
+          "Hummel LLC",
+          "Columbia",
+          "hummelllc.com",
+          "(803) 816-2204"
+        ],
+        "must_not_contain": [
+          "24/7",
+          "always-on",
+          "HIPAA",
+          "CJIS",
+          "NIST",
+          "\\bInc\\."
+        ]
+      },
+      "publishes_phone": true
     },
     {
       "key": "linkedin-company",
       "label": "LinkedIn company page",
       "url": "",
       "planned_url": "https://www.linkedin.com/company/hummel-llc",
-      "state": "not created — confirm the public URL is free at creation",
+      "state": "cleared to publish — copy, logo and website all ready; NOT created — needs the founder's signed-in LinkedIn session",
       "expect": {
         "status": 200,
-        "must_contain": ["Hummel LLC", "part-time IT leader", "hummelllc.com"],
-        "must_not_contain": ["GitHub", "HIPAA", "CJIS", "NIST", "24/7", "\\bInc\\."]
-      }
+        "must_contain": [
+          "Hummel LLC",
+          "part-time IT leader",
+          "hummelllc.com"
+        ],
+        "must_not_contain": [
+          "GitHub",
+          "HIPAA",
+          "CJIS",
+          "NIST",
+          "24/7",
+          "\\bInc\\."
+        ]
+      },
+      "publishes_phone": false
     },
     {
       "key": "linkedin-founder",
       "label": "LinkedIn founder profile (experience entry + Featured link only)",
       "url": "",
       "planned_url": "https://www.linkedin.com/in/<founder-slug>",
-      "state": "not edited — founder approval required; his headline/current-employer block are not touched",
+      "state": "go-ahead given 2026-09-28 (company page + edits sent for his review); NOT edited — his live headline/current-employer block stay untouched",
       "expect": {
         "status": 200,
-        "must_contain": ["Hummel LLC"],
-        "must_not_contain": ["github.io"]
-      }
+        "must_contain": [
+          "Hummel LLC"
+        ],
+        "must_not_contain": [
+          "github.io"
+        ]
+      },
+      "publishes_phone": false
     },
     {
       "key": "bing-places",
       "label": "Bing Places for Business",
       "url": "",
       "planned_url": "(recorded at publish; imports from GBP)",
-      "state": "not created — needs a Microsoft account owned by the founder; sequenced after GBP",
+      "state": "not created — imports from GBP once GBP is live; needs a Microsoft account owned by the founder",
       "expect": {
         "status": 200,
-        "must_contain": ["Hummel LLC", "Columbia"],
-        "must_not_contain": ["HIPAA", "CJIS", "NIST", "24/7"]
-      }
+        "must_contain": [
+          "Hummel LLC",
+          "Columbia",
+          "(803) 816-2204"
+        ],
+        "must_not_contain": [
+          "HIPAA",
+          "CJIS",
+          "NIST",
+          "24/7"
+        ]
+      },
+      "publishes_phone": true
     },
     {
       "key": "apple-business",
@@ -90,9 +147,18 @@
       "state": "not created — needs an Apple Account owned by the founder; phone + business email ready",
       "expect": {
         "status": 200,
-        "must_contain": ["Hummel LLC"],
-        "must_not_contain": ["HIPAA", "CJIS", "NIST", "24/7"]
-      }
+        "must_contain": [
+          "Hummel LLC",
+          "(803) 816-2204"
+        ],
+        "must_not_contain": [
+          "HIPAA",
+          "CJIS",
+          "NIST",
+          "24/7"
+        ]
+      },
+      "publishes_phone": true
     },
     {
       "key": "clutch",
@@ -102,9 +168,18 @@
       "state": "phase C by decision; blurb drafted only",
       "expect": {
         "status": 200,
-        "must_contain": ["Hummel LLC"],
-        "must_not_contain": ["HIPAA", "CJIS", "NIST", "24/7", "\\bInc\\."]
-      }
+        "must_contain": [
+          "Hummel LLC"
+        ],
+        "must_not_contain": [
+          "HIPAA",
+          "CJIS",
+          "NIST",
+          "24/7",
+          "\\bInc\\."
+        ]
+      },
+      "publishes_phone": false
     }
   ]
 }

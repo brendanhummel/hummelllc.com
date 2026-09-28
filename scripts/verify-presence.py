@@ -26,6 +26,12 @@ Durability note (2026-09-28): this file exists because the rev 1 harness was
 written into run scratch, which Paperclip deletes when the run ends, leaving the
 two documents that tell you to run it pointing at nothing. It lives in the repo
 next to preflight.py / postcutover.py so it survives the run that wrote it.
+
+rev 2 (2026-09-28, after the founder supplied the business phone): the canonical
+block now carries `phone` / `phone_e164`, a profile may set `publishes_phone`, and
+a phone-publishing platform fails if the canonical number is not on the page.
+The canon block itself is asserted non-empty before any check runs, so a manifest
+that drifts from nap-doctrine section 5 errors instead of passing quietly.
 """
 from __future__ import annotations
 
@@ -81,6 +87,15 @@ def check_profile(entry: dict, man: dict) -> list[str]:
     for pat in exp.get("must_not_contain", []):
         if re.search(pat, body, re.I):
             fails.append(f"forbidden pattern present: {pat!r}")
+    # 2026-09-28 (rev 2): the phone is the one value the founder supplied after
+    # the copy kit shipped, so a profile can carry the right website and the wrong
+    # (or a copied-from-somewhere) number. When the manifest says a platform
+    # publishes a phone, the value is enforced from the single canonical string.
+    if entry.get("publishes_phone"):
+        canonical_phone = man["canonical"].get("phone")
+        if canonical_phone and canonical_phone not in body:
+            fails.append(f"canonical phone missing: {canonical_phone!r}")
+
     for banned in man["staging_urls"]:
         if banned and banned in body:
             fails.append(f"STAGING URL LEAKED: {banned}")
@@ -100,10 +115,19 @@ def main() -> int:
 
     man = json.loads(Path(manifest_path).read_text())
     canon = man["canonical"]
+
+    # A manifest that has drifted from nap-doctrine section 5 would silently
+    # weaken every check below, so the canonical block is asserted first.
+    missing = [k for k in ("name", "website", "email", "phone") if not canon.get(k)]
+    if missing:
+        print(f"MANIFEST INCOMPLETE: canonical block is missing {missing} "
+              f"(nap-doctrine section 5 is the source; fix the manifest)")
+        return 1
+
     published = [p for p in man["profiles"] if p.get("url") and (only is None or p["key"] == only)]
 
     print(f"presence-verify -- manifest {manifest_path}")
-    print(f"canonical: {canon['name']} | {canon['website']} | {canon['email']}\n")
+    print(f"canonical: {canon['name']} | {canon['website']} | {canon['email']} | {canon['phone']}\n")
     failures_total = 0
     for p in published:
         fails = check_profile(p, man)
