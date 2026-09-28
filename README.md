@@ -28,7 +28,7 @@ Everything is plain HTML. No build step, nothing to install.
    ```bash
    git add -A && git commit -m "Update about copy" && git push
    ```
-3. Verify at the staging URL; production follows at DNS cutover.
+3. Verify on production: <https://hummelllc.com/> (live since the 2026-09-27 DNS cutover; check the page you edited plus `/scripts/preflight.py --live`).
 
 > **Internal links are RELATIVE on purpose.** GitHub Pages serves this repo under `/hummelllc.com/`, so absolute paths (`/assets/...`, `/what-we-do/`) 404 against the origin root. Root pages use `assets/...`/`what-we-do/...` (no leading slash); subfolder pages use `../assets/...`. These resolve at both the subpath staging URL and the apex production domain. `404.html` is the exception — root-absolute (it's served at arbitrary paths). Canonical/OG/sitemap URLs stay absolute (production domain). Don't "clean up" the relative refs.
 
@@ -89,13 +89,18 @@ The script is idempotent (re-running reports "already current"), replaces the pl
 | `scripts/set-contact.py` | Sets the Engage form's `endpoint` / `email` / `scheduleUrl` (Gate 1). `--email` requires `--verified`. `--show` prints the current config. |
 | `scripts/test-contact-modes.js` | `node scripts/test-contact-modes.js` — runs the real `contact.js` in a small DOM shim and asserts what a visitor sees in each of the three transports. |
 | `scripts/make-logo-assets.py` | Regenerates the header logo, favicons and OG card from the founder's `HummelLLCLogo.png`. |
+| `scripts/optimize-logo.py` | Derives the display-sized header logo variants (`logo-46.png` / `logo-93.png`) from the 272 KB master and wires the `srcset` on all pages. `--check` verifies without writing; preflight fails if a page goes back to the master. |
+| `scripts/set-social-meta.py` | Installs/refreshes the share-card tags (`twitter:card`, `og:site_name`, og image dimensions) on all pages and the Organization JSON-LD on Home. Idempotent; `--check` verifies. |
 
 ## SEO & assets
 
 - Titles/descriptions/canonical/OG per page (site-copy §3.7); canonical URLs point at the production domain with clean slugs.
+- Share cards: `twitter:card = summary_large_image` + `og:site_name` + OG image dimensions on every page, installed by `scripts/set-social-meta.py`.
+- Structured data: `Organization` JSON-LD on Home (`name`, `url`, `logo`, `email`, `description`) — every value already public on-page.
 - `sitemap.xml` + `robots.txt` at root.
 - `assets/og-image.png` — social card (1200×630) generated from the FINAL logo (`HummelLLCLogo.png`, brief rev 4) on white with the trimmed logomark. `og:image` referenced from every page head.
-- Header brand = `assets/logo.png` (trimmed full logo, mark + wordmark). Favicons: `assets/favicon-32.png`, `assets/favicon-180.png` (apple-touch-icon), `favicon.ico` (16/32/48) — all H-monogram crops of the final logo, generated from the same source file. **Regenerate any of them with `python3 scripts/make-logo-assets.py`** — the script reads the source logo from iCloud (`~/Library/Mobile Documents/com~apple~CloudDocs/Hummelllc/HummelLLCLogo.png`, 1144×1104 RGBA). Only that file is the logo source; no derivatives without founder OK.
+- **Header logo payload (2026-09-28):** the header renders the logo at 46 px tall, so pages serve `assets/logo-46.png` (5.8 KB) / `assets/logo-93.png` (10 KB) via `srcset` instead of the 272 KB master `assets/logo.png` — that master is the brand source and is no longer referenced by any page. Found: every page view was downloading ~270 KB of pixels it discarded; full home page is now ~18 KB. Change the logo with `python3 scripts/make-logo-assets.py`, then `python3 scripts/optimize-logo.py`.
+- Header brand = `assets/logo.png` (trimmed full logo, mark + wordmark) — kept as the brand source; the pages serve the two display-sized derivatives above. Favicons: `assets/favicon-32.png`, `assets/favicon-180.png` (apple-touch-icon), `favicon.ico` (16/32/48) — all H-monogram crops of the final logo, generated from the same source file. **Regenerate any of them with `python3 scripts/make-logo-assets.py`** — the script reads the source logo from iCloud (`~/Library/Mobile Documents/com~apple~CloudDocs/Hummelllc/HummelLLCLogo.png`, 1144×1104 RGBA). Only that file is the logo source; no derivatives without founder OK.
 
 ## DNS / launch facts
 
@@ -109,12 +114,12 @@ The script is idempotent (re-running reports "already current"), replaces the pl
 Run this before launch and after any copy change — it is the guardrail net, so a regression can't ship quietly:
 
 ```bash
-python3 scripts/preflight.py                                   # copy guardrails + structure + launch config
-python3 scripts/preflight.py --live https://brendanhummel.github.io/hummelllc.com/
-python3 scripts/preflight.py --live <base> --dns               # + DNS vs the launch target
+python3 scripts/preflight.py                                   # copy guardrails + structure + assets + launch config
+python3 scripts/preflight.py --live https://hummelllc.com/     # + fetch every route and the served assets
+python3 scripts/preflight.py --live https://hummelllc.com/ --dns   # + DNS vs the launch target
 ```
 
-Exit code 0 = no FAIL. It checks: the site-copy §2 banned-word list (24/7 and always-on allowed only inside the approved negations), HIPAA/CJIS/NIST absent as credentials, no certs/client counts/revenue, both attributed market stats present, the pricing benchmark label, one `<h1>` per page, meta/canonical/OG/skip links, every internal link resolving on disk, sitemap/robots completeness, **no credentials on any page** (API-key/bearer/secret shapes; the analytics token must be the 32-hex public site token), and the three launch gates:
+Exit code 0 = no FAIL. It checks: the site-copy §2 banned-word list (24/7 and always-on allowed only inside the approved negations), HIPAA/CJIS/NIST absent as credentials, no certs/client counts/revenue, both attributed market stats present, the pricing benchmark label, one `<h1>` per page, meta/canonical/OG/skip links, every internal link resolving on disk, sitemap/robots completeness, **no credentials on any page** (API-key/bearer/secret shapes; the analytics token must be the 32-hex public site token), the **header logo payload** (display-sized variants exist, are within a 24 KB budget, and no page references the 272 KB master), the **share-card + structured-data tags** (`twitter:card`, `og:site_name`, parseable Organization JSON-LD), and the three launch gates:
 
 1. **Contact delivery configured** (`contact.js` `endpoint` or `email`) — otherwise the Engage form tells visitors delivery "goes live with launch", i.e. the site cannot take inquiries.
 2. **Cloudflare Web Analytics beacon** live on all 6 pages (no `<TOKEN>` placeholder left).

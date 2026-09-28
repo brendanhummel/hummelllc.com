@@ -1,6 +1,6 @@
 # Launch runbook — hummelllc.com
 
-Key: `launch-runbook` · Owner: Website Engineer (HUM-5) · Written 2026-09-25 · Updated 2026-09-28 (**rev 5** — www SAN resolved, production verified end-to-end)
+Key: `launch-runbook` · Owner: Website Engineer (HUM-5) · Written 2026-09-25 · Updated 2026-09-28 (**rev 7** — post-launch payload + SEO pass, §6)
 Build status: **COMPLETE AND LIVE IN PRODUCTION.** Both founder-input gates are **CLOSED** (Gate 1 contact delivery 2026-09-25; Gate 2 analytics 2026-09-25), the three launch-window decisions are **ANSWERED** (founder, 2026-09-27 — §0.1), and the **DNS cutover is done and verified** (HUM-11, 2026-09-27/28): `https://hummelllc.com/` serves the real site on a valid Let's Encrypt certificate that now covers **both** `hummelllc.com` and `www.hummelllc.com`, with mail (MX/SPF) intact. `python3 scripts/postcutover.py` → **PRODUCTION VERIFIED — 19 ok, 0 warn, 0 fail**. The only item left in §3 is one human action: send a real email to `hello@hummelllc.com` and confirm it lands.
 
 - Staging (verified 2026-09-27, `main` @ `9b3c9c1`): https://brendanhummel.github.io/hummelllc.com/
@@ -24,6 +24,7 @@ Build status: **COMPLETE AND LIVE IN PRODUCTION.** Both founder-input gates are 
 | Copyright line (`© 2026 Hummel LLC`) | **RESOLVED 2026-09-25 — founder chose KEEP**, as approved copy (trade-name usage; LLC not filed). Remains a preflight WARN so it re-surfaces at LLC formation. |
 | Scheduling link (`scheduleUrl`) | **DECIDED 2026-09-27 — Cal.com free plan** (founder, §0.1). **URL still owed by the founder** — the one remaining input on this issue. One command to wire (§4.1). Wiring hardened 2026-09-25 so setting the URL also retires the now-false "A calendar link lands here before launch" note. Not a launch blocker. |
 | DNS cutover | ✅ **CUTOVER COMPLETE AND FULLY VERIFIED 2026-09-28** — apex A → four GitHub IPs, `www` CNAME → `brendanhummel.github.io`, custom domain set, Enforce HTTPS on, **and the Pages certificate now covers both hostnames** (the last residual — the apex-only SAN — was resolved 2026-09-28 by the read-only Settings → Pages visit in §3). **`https://hummelllc.com/`: 200, valid cert. `https://www.hummelllc.com/`: valid cert, 301 → the secure canonical. All 6 routes 200 + beacon, mail intact.** `postcutover.py` → **PRODUCTION VERIFIED — 19 ok, 0 warn, 0 fail**. Tracked as **HUM-11**. |
+| Post-launch payload + SEO pass | ✅ **DONE 2026-09-28 (§6).** Header logo 271,913 B → 9,990 B per page view (full home page ~280 KB → **17,833 B**); master retained as the brand source but referenced by no page; share-card tags + `Organization` JSON-LD added; preflight now guards both. |
 
 ### 0.1 Launch-window decisions — ANSWERED (founder, 2026-09-27)
 
@@ -229,3 +230,24 @@ Owner: founder (GoDaddy access — I have no registrar credentials and will not 
 Plain HTML, no build step: edit the page file → `git add -A && git commit -m "…" && git push` → live in about a minute. Then run `python3 scripts/preflight.py --live https://hummelllc.com/ --dns` to confirm nothing regressed — in particular that the guardrail words, the two attributed stats, and the relative internal links are still intact. Internal links must stay relative (see README); `404.html` is the deliberate exception and carries an inline style fallback so it also reads correctly on the staging subpath.
 
 Guardrail reminder for whoever edits copy: the site's words come from `brief` and `site-copy` only. New claims require a brief update first.
+
+---
+
+## 6. Post-launch pass — payload + SEO (2026-09-28)
+
+Ran on the live production domain immediately after the cutover closed. One real defect found and fixed; the rest was foundation work.
+
+**Defect — header logo payload.** `assets/logo.png` is the 1083×1020 brand master (271,913 B) and every page served it as-is while the header renders it at `height: 2.9rem` (~46 px). Every page view therefore downloaded ~270 KB of pixels the browser discarded — by far the largest cost on an otherwise ~2 KB page. Measured before/after on production:
+
+| | before | after |
+|---|---|---|
+| logo transferred per page view | 271,913 B | **9,990 B** (2× variant; 5,756 B at 1×) |
+| full home page (HTML + CSS + JS + logo, gzip where applicable) | ~280 KB | **17,833 B (~18 KB)** |
+
+Fix: `scripts/optimize-logo.py` derives `assets/logo-46.png` (49×46) and `assets/logo-93.png` (99×93) from the untouched master and wires the header `<img>` on all 7 pages with `srcset` + explicit width/height (no layout shift). The master stays in the repo as the brand source and is no longer referenced by any page. `preflight.py` now checks the local assets *and* the served bytes, so the master cannot come back silently — proven by reintroducing the defect on a scratch copy, which produced 2 FAILs.
+
+**SEO foundation added:** `twitter:card = summary_large_image` + `twitter:title/description/image` + `og:site_name` + `og:image:width/height` on all 6 pages, and an `Organization` JSON-LD node on Home (`name`, `url`, `logo`, `email`, `description` — every value already public on-page; no new claims). Installed by `scripts/set-social-meta.py` (idempotent, `--check` supported) and asserted by preflight both locally and live.
+
+**Verification after the change (production):** `postcutover.py` → **PRODUCTION VERIFIED — 19 ok, 0 warn, 0 fail**; `preflight.py --live https://hummelllc.com/ --dns` → **LAUNCH-READY — 14 ok, 2 warn, 0 fail**; `node scripts/test-contact-modes.js` → all contact-mode behaviours pass; `scripts/test-engage-gate.py` → 7/7 cases behave correctly.
+
+**Deliberately not done:** the mark sits inside generous padding in the master (unchanged by this pass — proportions are identical to what was live before). Tightening that crop would change how the logo reads on the page, which is a brand decision, not an engineering one — flagged to Brand & Content Lead rather than done unilaterally.

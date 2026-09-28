@@ -16,6 +16,7 @@ Stdlib only — nothing to install.
 """
 
 import argparse
+import json
 import os
 import re
 import socket
@@ -300,6 +301,31 @@ def check_assets():
         ok(f"logo payload within budget ({len(seen)} variants, worst {worst:,} bytes per page view)")
 
 
+# ---------------------------------------------------------------- share / structured data
+def check_social():
+    before = len(FAILS)
+    for page in PAGES:
+        text = read(page)
+        if 'name="twitter:card"' not in text:
+            fail(f"{page}: no twitter:card — shared links render without the card image; "
+                 f"run python3 scripts/set-social-meta.py")
+        if 'property="og:site_name"' not in text:
+            fail(f"{page}: no og:site_name — run python3 scripts/set-social-meta.py")
+    m = re.search(r'<script type="application/ld\+json">(.*?)</script>', read("index.html"), re.S)
+    if m is None:
+        fail("index.html: no Organization JSON-LD — run python3 scripts/set-social-meta.py")
+    else:
+        try:
+            data = json.loads(m.group(1))
+        except ValueError as e:
+            fail(f"index.html: JSON-LD does not parse ({e}) — structured data is inert to search engines")
+        else:
+            if data.get("@type") != "Organization" or not data.get("url"):
+                fail("index.html: JSON-LD is not an Organization node with a url")
+    if len(FAILS) == before:
+        ok("share cards + Organization JSON-LD present on all pages")
+
+
 # ---------------------------------------------------------------- live + dns
 def fetch(url, method="GET"):
     req = urllib.request.Request(url, method=method, headers={"User-Agent": "hummelllc-preflight"})
@@ -321,6 +347,11 @@ def check_live(base):
         elif slug in ("", "about/"):
             if "stylesheet" not in body and "site.css" not in body:
                 fail(f"live: {base}{slug} served but no stylesheet link (asset path bug)")
+        if slug == "":
+            if 'name="twitter:card"' not in body:
+                fail("live: home page served without a twitter:card — share cards are missing in production")
+            if 'application/ld+json' not in body:
+                fail("live: home page served without Organization JSON-LD")
     status, body = fetch(base + "definitely-not-a-page-xyz/")
     if status != 404:
         fail(f"live: unknown route returned {status}, expected 404")
@@ -401,6 +432,7 @@ def main():
     check_no_secrets()
     check_structure()
     check_assets()
+    check_social()
     check_launch_config()
     if args.live:
         check_live(args.live)
