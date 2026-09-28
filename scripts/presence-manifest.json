@@ -1,0 +1,104 @@
+{
+  "manifest": "Hummel LLC — profile verification manifest (M3-B / HUM-9)",
+  "canonical": {
+    "name": "Hummel LLC",
+    "website": "https://hummelllc.com/",
+    "email": "hello@hummelllc.com",
+    "location": "Columbia, SC",
+    "source": "nap-doctrine rev 3 section 5"
+  },
+  "staging_urls": [
+    "brendanhummel.github.io",
+    "github.io/hummelllc.com"
+  ],
+  "guardrail_patterns": [
+    "HIPAA", "CJIS", "NIST", "24/7", "always-on", "always on",
+    "\\bcertified\\b", "\\bcertification\\b", "\\bEIN\\b", "\\bInc\\.", "incorporated",
+    "registered in SC", "same-day"
+  ],
+  "profiles": [
+    {
+      "key": "site",
+      "label": "hummelllc.com (canonical anchor — not a profile, checked every run)",
+      "url": "https://hummelllc.com/",
+      "state": "LIVE (cutover verified 2026-09-28)",
+      "expect": {
+        "status": 200,
+        "must_contain": ["Hummel LLC", "https://hummelllc.com/", "cloudflareinsights.com/beacon.min.js"],
+        "must_not_contain": ["GoDaddy", "/lander"]
+      }
+    },
+    {
+      "key": "gbp",
+      "label": "Google Business Profile (service-area, address hidden)",
+      "url": "",
+      "planned_url": "https://www.google.com/maps/place/… (short name to be recorded at claim)",
+      "state": "not created — blocked on business phone + Google-account choice",
+      "expect": {
+        "status": 200,
+        "must_contain": ["Hummel LLC", "Columbia", "hummelllc.com"],
+        "must_not_contain": ["24/7", "always-on", "HIPAA", "CJIS", "NIST", "\\bInc\\."]
+      }
+    },
+    {
+      "key": "linkedin-company",
+      "label": "LinkedIn company page",
+      "url": "",
+      "planned_url": "https://www.linkedin.com/company/hummel-llc",
+      "state": "not created — confirm the public URL is free at creation",
+      "expect": {
+        "status": 200,
+        "must_contain": ["Hummel LLC", "part-time IT leader", "hummelllc.com"],
+        "must_not_contain": ["GitHub", "HIPAA", "CJIS", "NIST", "24/7", "\\bInc\\."]
+      }
+    },
+    {
+      "key": "linkedin-founder",
+      "label": "LinkedIn founder profile (experience entry + Featured link only)",
+      "url": "",
+      "planned_url": "https://www.linkedin.com/in/<founder-slug>",
+      "state": "not edited — founder approval required; his headline/current-employer block are not touched",
+      "expect": {
+        "status": 200,
+        "must_contain": ["Hummel LLC"],
+        "must_not_contain": ["github.io"]
+      }
+    },
+    {
+      "key": "bing-places",
+      "label": "Bing Places for Business",
+      "url": "",
+      "planned_url": "(recorded at publish; imports from GBP)",
+      "state": "not created — needs a Microsoft account owned by the founder; sequenced after GBP",
+      "expect": {
+        "status": 200,
+        "must_contain": ["Hummel LLC", "Columbia"],
+        "must_not_contain": ["HIPAA", "CJIS", "NIST", "24/7"]
+      }
+    },
+    {
+      "key": "apple-business",
+      "label": "Apple Business Connect (Maps)",
+      "url": "",
+      "planned_url": "(recorded at publish)",
+      "state": "not created — needs an Apple Account owned by the founder; phone + business email ready",
+      "expect": {
+        "status": 200,
+        "must_contain": ["Hummel LLC"],
+        "must_not_contain": ["HIPAA", "CJIS", "NIST", "24/7"]
+      }
+    },
+    {
+      "key": "clutch",
+      "label": "Clutch profile (deliberately deferred to phase C)",
+      "url": "",
+      "planned_url": "(none — not submitted until 2-3 clients agree to review)",
+      "state": "phase C by decision; blurb drafted only",
+      "expect": {
+        "status": 200,
+        "must_contain": ["Hummel LLC"],
+        "must_not_contain": ["HIPAA", "CJIS", "NIST", "24/7", "\\bInc\\."]
+      }
+    }
+  ]
+}
