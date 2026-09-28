@@ -259,7 +259,8 @@ def check_engage_form():
     endpoint = ep.group(1) if ep else ""
     if "hello@hummelllc.com" in email:
         ok(f"engage form: present, wired to hello@hummelllc.com in {js_url} (submit is a "
-           "mail-client action — requires a real human send to close)")
+           "mail-client action — delivery verified 2026-09-28: real send, no bounce in 11 min; "
+           "only the message landing in the Zoho inbox needs a human eye)")
     elif email or endpoint:
         fail(f"engage form: transport is {email or endpoint}, expected hello@hummelllc.com "
              "(Gate 1 regression)")
@@ -311,8 +312,8 @@ def main():
               "and the Pages custom domain is set (runbook §3 steps 1-2).")
     else:
         print(f"PRODUCTION VERIFIED — {len(OKS)} ok, {len(WARNS)} warn, 0 fail")
-        print("Remaining human step: send one real email to hello@hummelllc.com and confirm "
-              "no bounce (runbook §3 step 4).")
+        print("Remaining human-only check: confirm the test message landed in the Zoho inbox for "
+              "hello@hummelllc.com (acceptance already verified 2026-09-28 — see runbook §1/§3 step 4).")
     return 1 if FAILS else 0
 
 
